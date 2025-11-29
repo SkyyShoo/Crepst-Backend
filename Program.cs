@@ -44,8 +44,16 @@ builder.Services.AddAuthentication(options =>
     };
 });
 // Add services to the container.
-builder.Services.AddSignalR();
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular",
+        builder => builder
+            .WithOrigins("http://localhost:4200")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials()
+    );
+});
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -68,6 +76,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapHub<Backend.Hubs.AppHub>("/AppHub");
+app.UseCors("AllowAngular");
 
 app.Run();
