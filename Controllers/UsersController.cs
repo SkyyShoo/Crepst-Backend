@@ -38,10 +38,17 @@ namespace Backend.Controllers
 
             IdentityResult identityResult = await _userManager.CreateAsync(user, register.Password);
 
+
+            // Si la création a échoué, on retourne une erreur. N'hésitez pas à mettre un breakpoint ici
+            // pour inspecter l'objet identityResult si vous avez du mal à créer des utilisateurs.
             if (!identityResult.Succeeded)
             {
+                // On inspecte la liste des erreurs renvoyées par Identity
+                var errors = identityResult.Errors.ToList();
+
+                // Retourne les erreurs
                 return StatusCode(StatusCodes.Status400BadRequest,
-                    new { Message = "La création de l'utilisateur a échoué." });
+                    new { Message = "La création de l'utilisateur a échoué.", Details = errors });
             }
             return Ok(new { Message = "Inscription réussie ! 🥳" });
         }
