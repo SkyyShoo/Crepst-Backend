@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace Backend.Migrations
 {
     /// <inheritdoc />
-    public partial class RelationEventExtraitUser : Migration
+    public partial class Seed : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -237,6 +239,30 @@ namespace Backend.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[] { "00000000-0000-0000-0000-000000000002", null, "admin", "ADMIN" });
+
+            migrationBuilder.InsertData(
+                table: "AspNetUsers",
+                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
+                values: new object[,]
+                {
+                    { "00000000-0000-0000-0000-000000000001", 0, "e212e504-e7b4-4c7f-9730-03076871e14e", "seed@example.invalid", true, true, null, "PABLO@ADMIN.COM", "PABLO", "REMOVED_PASSWORD_HASH", null, false, "fb76f82b-6801-488c-a9cc-cf23600aae3f", false, "pablo" },
+                    { "00000000-0000-0000-0000-000000000002", 0, "f0468e95-a5bc-46ce-a365-061afad34884", "seed@example.invalid", true, true, null, "SAM@ADMIN.COM", "SAM", "REMOVED_PASSWORD_HASH", null, false, "7a2e0b46-1c62-446a-ba55-a88915b838d1", false, "sam" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Events",
+                columns: new[] { "Id", "Date", "Lieu", "Resumer", "Titre" },
+                values: new object[] { 1, new DateTime(2024, 7, 15, 20, 0, 0, 0, DateTimeKind.Unspecified), "Salle de Concert Paris", "Une soirée inoubliable avec les meilleurs musiciens de jazz.", "Concert de Jazz" });
+
+            migrationBuilder.InsertData(
+                table: "Extraits",
+                columns: new[] { "Id", "Auteur", "FileName", "MaisonEdition", "MimeType", "NumPages", "Titre" },
+                values: new object[] { 1, "F. Scott Fitzgerald", "Test", "Scribner", ".pdf", 180, "Le Grand Gatsby" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.Migrations
 {
     [DbContext(typeof(BackendContext))]
-    [Migration("20251130000123_RelationEventExtraitUser")]
-    partial class RelationEventExtraitUser
+    [Migration("20251130033439_Seed")]
+    partial class Seed
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -54,6 +54,16 @@ namespace Backend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Events");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Date = new DateTime(2024, 7, 15, 20, 0, 0, 0, DateTimeKind.Unspecified),
+                            Lieu = "Salle de Concert Paris",
+                            Resumer = "Une soirée inoubliable avec les meilleurs musiciens de jazz.",
+                            Titre = "Concert de Jazz"
+                        });
                 });
 
             modelBuilder.Entity("Backend.Models.Extrait", b =>
@@ -90,6 +100,18 @@ namespace Backend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Extraits");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Auteur = "F. Scott Fitzgerald",
+                            FileName = "Test",
+                            MaisonEdition = "Scribner",
+                            MimeType = ".pdf",
+                            NumPages = 180,
+                            Titre = "Le Grand Gatsby"
+                        });
                 });
 
             modelBuilder.Entity("Backend.Models.User", b =>
@@ -155,6 +177,40 @@ namespace Backend.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "00000000-0000-0000-0000-000000000001",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "e212e504-e7b4-4c7f-9730-03076871e14e",
+                            Email = "seed@example.invalid",
+                            EmailConfirmed = true,
+                            LockoutEnabled = true,
+                            NormalizedEmail = "PABLO@ADMIN.COM",
+                            NormalizedUserName = "PABLO",
+                            PasswordHash = "REMOVED_PASSWORD_HASH",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "fb76f82b-6801-488c-a9cc-cf23600aae3f",
+                            TwoFactorEnabled = false,
+                            UserName = "pablo"
+                        },
+                        new
+                        {
+                            Id = "00000000-0000-0000-0000-000000000002",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "f0468e95-a5bc-46ce-a365-061afad34884",
+                            Email = "seed@example.invalid",
+                            EmailConfirmed = true,
+                            LockoutEnabled = true,
+                            NormalizedEmail = "SAM@ADMIN.COM",
+                            NormalizedUserName = "SAM",
+                            PasswordHash = "REMOVED_PASSWORD_HASH",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "7a2e0b46-1c62-446a-ba55-a88915b838d1",
+                            TwoFactorEnabled = false,
+                            UserName = "sam"
+                        });
                 });
 
             modelBuilder.Entity("EventExtrait", b =>
@@ -212,6 +268,14 @@ namespace Backend.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "00000000-0000-0000-0000-000000000002",
+                            Name = "admin",
+                            NormalizedName = "ADMIN"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
