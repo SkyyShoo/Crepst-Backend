@@ -38,6 +38,31 @@ namespace Backend.Controllers
         }
 
         [HttpGet("{id}")]
+        public async Task<ActionResult<List<Extrait>>> GetExtraitsbyEvent(int id)
+        {
+            var events = await _context.Events.FindAsync(id);
+
+            if (events == null)
+            {
+                return NotFound();
+            }
+            // A changer lorsque la création d'extrait et events sera complétement fonctionnel
+            if(events.ExtraitId != null)
+            foreach(int extraitId in events.ExtraitId)
+            {
+                    var extrait = await GetExtrait(extraitId);
+                    if (extrait.Value != null)
+                    {
+                        events.Extraits.Add(extrait.Value);
+                    }
+                }
+            
+
+            return events.Extraits;
+
+        }
+
+        [HttpGet("{id}")]
         public async Task<ActionResult<Extrait>> GetExtraitFile(int id)
         {
             var extrait = await _context.Extraits.FindAsync(id);

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace Backend.Models
 {
@@ -13,5 +14,7 @@ namespace Backend.Models
         public string MimeType { get; set; } = null!;
         [ValidateNever]
         public virtual List<Event> Events { get; set; } = null!;
+
+
     }
 }
