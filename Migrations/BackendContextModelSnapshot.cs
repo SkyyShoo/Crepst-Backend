@@ -36,51 +36,11 @@ namespace Backend.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Lieu")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Events");
-                });
-
-            modelBuilder.Entity("Backend.Models.Livre", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AnneePublication")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Auteur")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Genre")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MimeType")
+                    b.Property<string>("Resumer")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -90,7 +50,43 @@ namespace Backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Livres");
+                    b.ToTable("Events");
+                });
+
+            modelBuilder.Entity("Backend.Models.Extrait", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Auteur")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MaisonEdition")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MimeType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("NumPages")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Titre")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Extraits");
                 });
 
             modelBuilder.Entity("Backend.Models.User", b =>
@@ -158,19 +154,19 @@ namespace Backend.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("EventLivre", b =>
+            modelBuilder.Entity("EventExtrait", b =>
                 {
                     b.Property<int>("EventsId")
                         .HasColumnType("int");
 
-                    b.Property<int>("livresId")
+                    b.Property<int>("ExtraitsId")
                         .HasColumnType("int");
 
-                    b.HasKey("EventsId", "livresId");
+                    b.HasKey("EventsId", "ExtraitsId");
 
-                    b.HasIndex("livresId");
+                    b.HasIndex("ExtraitsId");
 
-                    b.ToTable("EventLivre");
+                    b.ToTable("EventExtrait");
                 });
 
             modelBuilder.Entity("EventUser", b =>
@@ -186,21 +182,6 @@ namespace Backend.Migrations
                     b.HasIndex("ParticipantsId");
 
                     b.ToTable("EventUser");
-                });
-
-            modelBuilder.Entity("LivreUser", b =>
-                {
-                    b.Property<int>("LivresId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UsersId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("LivresId", "UsersId");
-
-                    b.HasIndex("UsersId");
-
-                    b.ToTable("LivreUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -336,7 +317,7 @@ namespace Backend.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("EventLivre", b =>
+            modelBuilder.Entity("EventExtrait", b =>
                 {
                     b.HasOne("Backend.Models.Event", null)
                         .WithMany()
@@ -344,9 +325,9 @@ namespace Backend.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Backend.Models.Livre", null)
+                    b.HasOne("Backend.Models.Extrait", null)
                         .WithMany()
-                        .HasForeignKey("livresId")
+                        .HasForeignKey("ExtraitsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -362,21 +343,6 @@ namespace Backend.Migrations
                     b.HasOne("Backend.Models.User", null)
                         .WithMany()
                         .HasForeignKey("ParticipantsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("LivreUser", b =>
-                {
-                    b.HasOne("Backend.Models.Livre", null)
-                        .WithMany()
-                        .HasForeignKey("LivresId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Backend.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

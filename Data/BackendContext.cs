@@ -16,7 +16,7 @@ namespace Backend.Data
            
         }
 
-        public DbSet<Backend.Models.Livre> Livres { get; set; } = default!;
+        public DbSet<Backend.Models.Extrait> Extraits { get; set; } = default!;
 
         public DbSet<Backend.Models.Event> Events { get; set; } = default!;
     }

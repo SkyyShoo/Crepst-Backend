@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Backend.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class RelationEventExtraitUser : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -48,6 +48,40 @@ namespace Backend.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Events",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Titre = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Resumer = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Lieu = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Events", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Extraits",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Titre = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Auteur = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MaisonEdition = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    NumPages = table.Column<int>(type: "int", nullable: false),
+                    FileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MimeType = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Extraits", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -156,6 +190,54 @@ namespace Backend.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "EventUser",
+                columns: table => new
+                {
+                    EventsId = table.Column<int>(type: "int", nullable: false),
+                    ParticipantsId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EventUser", x => new { x.EventsId, x.ParticipantsId });
+                    table.ForeignKey(
+                        name: "FK_EventUser_AspNetUsers_ParticipantsId",
+                        column: x => x.ParticipantsId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_EventUser_Events_EventsId",
+                        column: x => x.EventsId,
+                        principalTable: "Events",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EventExtrait",
+                columns: table => new
+                {
+                    EventsId = table.Column<int>(type: "int", nullable: false),
+                    ExtraitsId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EventExtrait", x => new { x.EventsId, x.ExtraitsId });
+                    table.ForeignKey(
+                        name: "FK_EventExtrait_Events_EventsId",
+                        column: x => x.EventsId,
+                        principalTable: "Events",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_EventExtrait_Extraits_ExtraitsId",
+                        column: x => x.ExtraitsId,
+                        principalTable: "Extraits",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -194,6 +276,16 @@ namespace Backend.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EventExtrait_ExtraitsId",
+                table: "EventExtrait",
+                column: "ExtraitsId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EventUser_ParticipantsId",
+                table: "EventUser",
+                column: "ParticipantsId");
         }
 
         /// <inheritdoc />
@@ -215,10 +307,22 @@ namespace Backend.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "EventExtrait");
+
+            migrationBuilder.DropTable(
+                name: "EventUser");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
+                name: "Extraits");
+
+            migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Events");
         }
     }
 }
