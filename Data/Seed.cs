@@ -68,7 +68,8 @@ namespace Backend.Data
                 Date= new DateTime(2024, 7, 15, 20, 0, 0),
                 Resumer= "Une soirée inoubliable avec les meilleurs musiciens de jazz.",
                 Lieu= "Salle de Concert Paris",
-                ExtraitId= new List<int> { 1 }
+                ExtraitId= new List<int> { 1 },
+                CommentsId= new List<int> { 1 }
                 }
             ];
         }
@@ -86,6 +87,19 @@ namespace Backend.Data
                 NumPages= 180,
                 FileName= "Test",
                 MimeType= ".pdf"
+                }
+            ];
+        }
+
+        public static Comment[] SeedComments()
+        {
+            return
+            [
+                new Comment
+                {
+                Id= 1,
+                Text= "Un extrait fascinant",
+                Date= new DateTime(2024, 6, 1, 14, 25, 2)
                 }
             ];
         }
