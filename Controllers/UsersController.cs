@@ -81,7 +81,8 @@ namespace Backend.Controllers
                 return Ok(new
                 {
                     token = new JwtSecurityTokenHandler().WriteToken(token),
-                    validTo = token.ValidTo
+                    validTo = token.ValidTo,
+                    role = roles
                 });
             }
             else
