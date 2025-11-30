@@ -119,7 +119,7 @@ namespace Backend.Controllers
             _context.Comments.Add(comment);
             await _context.SaveChangesAsync();
 
-            return Ok(comment);
+            return Ok(commentDTO);
         }
 
         // DELETE: api/Comments/5
