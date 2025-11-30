@@ -1,6 +1,7 @@
 ﻿using Backend.Data;
 using Backend.Models;
 using Backend.Models.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -43,25 +44,30 @@ namespace Backend.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<List<Comment>>> GetCommentsbyEvent(int id)
+        public async Task<ActionResult<List<CommentDTO>>> GetCommentsbyEvent(int id)
         {
-            var @event = await _context.Events.FindAsync(id);
+            var comments = await _context.Comments.Where(c => c.EventId == id).ToListAsync();
 
-            if (@event == null)
+            if (comments == null)
             {
                 return NotFound();
             }
-            if (@event.CommentsId != null)
-                foreach (int commentsId in @event.CommentsId)
+            List<CommentDTO> commentDTOs = new List<CommentDTO>();
+                foreach (Comment comment in comments)
                 {
-                    var comment = await GetComment(commentsId);
-                    if (comment.Value != null)
-                    {
-                        @event.Comments.Add(comment.Value);
-                    }
+                        CommentDTO commentDTO = new()
+                        {
+                            Text = comment.Text,
+                            Id = comment.Id,
+                            Date = comment.Date,
+                            Author = comment.User?.UserName ?? "Anonyme",
+                            EventId = id
+                        };
+                        commentDTOs.Add(commentDTO);
+                    
                 }
 
-            return @event.Comments;
+            return commentDTOs;
         }
 
         // PUT: api/Comments/5
@@ -98,6 +104,7 @@ namespace Backend.Controllers
         // POST: api/Comments
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult<Comment>> PostComment(CommentDTO commentDTO)
         {
             User? user = await _userManager.FindByNameAsync(commentDTO.Author);
@@ -106,12 +113,13 @@ namespace Backend.Controllers
             {
                 Text = commentDTO.Text,
                 Date = commentDTO.Date ?? DateTime.Now,
-                User = user
+                User = user,
+                EventId = commentDTO.EventId
             };
             _context.Comments.Add(comment);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetComment", new { id = comment.Id }, comment);
+            return Ok(comment);
         }
 
         // DELETE: api/Comments/5

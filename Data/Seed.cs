@@ -99,7 +99,8 @@ namespace Backend.Data
                 {
                 Id= 1,
                 Text= "Un extrait fascinant",
-                Date= new DateTime(2024, 6, 1, 14, 25, 2)
+                Date= new DateTime(2024, 6, 1, 14, 25, 2),
+                EventId= 1
                 }
             ];
         }

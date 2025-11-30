@@ -36,7 +36,7 @@ namespace Backend.Migrations
                     b.Property<DateTime?>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("EventId")
+                    b.Property<int>("EventId")
                         .HasColumnType("int");
 
                     b.Property<string>("Text")
@@ -59,6 +59,7 @@ namespace Backend.Migrations
                         {
                             Id = 1,
                             Date = new DateTime(2024, 6, 1, 14, 25, 2, 0, DateTimeKind.Unspecified),
+                            EventId = 1,
                             Text = "Un extrait fascinant"
                         });
                 });
@@ -226,7 +227,7 @@ namespace Backend.Migrations
                         {
                             Id = "00000000-0000-0000-0000-000000000001",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "ee119473-59c8-4214-bbe4-0261c7852f86",
+                            ConcurrencyStamp = "3a8ad87a-7063-44db-b448-868f326a1267",
                             Email = "seed@example.invalid",
                             EmailConfirmed = true,
                             LockoutEnabled = true,
@@ -234,7 +235,7 @@ namespace Backend.Migrations
                             NormalizedUserName = "PABLO",
                             PasswordHash = "REMOVED_PASSWORD_HASH",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "9c11d07d-187a-4760-8dd3-58ca920861c4",
+                            SecurityStamp = "d26d379b-9dbe-401e-978e-89168c3146d6",
                             TwoFactorEnabled = false,
                             UserName = "pablo"
                         },
@@ -242,7 +243,7 @@ namespace Backend.Migrations
                         {
                             Id = "00000000-0000-0000-0000-000000000002",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "62d22eea-8a7d-4edb-bc15-d864fc7a1697",
+                            ConcurrencyStamp = "18255f6e-04f1-4cbc-baa4-6e530d522b8d",
                             Email = "seed@example.invalid",
                             EmailConfirmed = true,
                             LockoutEnabled = true,
@@ -250,7 +251,7 @@ namespace Backend.Migrations
                             NormalizedUserName = "SAM",
                             PasswordHash = "REMOVED_PASSWORD_HASH",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "5abb2a3c-c754-4eca-9555-e31dcb743b91",
+                            SecurityStamp = "58d680e3-82b7-4028-a062-a3af739940bf",
                             TwoFactorEnabled = false,
                             UserName = "sam"
                         });
@@ -443,7 +444,9 @@ namespace Backend.Migrations
                 {
                     b.HasOne("Backend.Models.Event", null)
                         .WithMany("Comments")
-                        .HasForeignKey("EventId");
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Backend.Models.User", "User")
                         .WithMany()
