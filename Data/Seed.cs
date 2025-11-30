@@ -67,7 +67,8 @@ namespace Backend.Data
                 Titre= "Concert de Jazz",
                 Date= new DateTime(2024, 7, 15, 20, 0, 0),
                 Resumer= "Une soirée inoubliable avec les meilleurs musiciens de jazz.",
-                Lieu= "Salle de Concert Paris"
+                Lieu= "Salle de Concert Paris",
+                ExtraitId= new List<int> { 1 }
                 }
             ];
         }

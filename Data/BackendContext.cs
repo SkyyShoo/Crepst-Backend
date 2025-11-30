@@ -33,6 +33,8 @@ namespace Backend.Data
 );
             builder.Entity<IdentityUserRole<string>>().HasData(
     new IdentityUserRole<string> { UserId = "00000000-0000-0000-0000-000000000002", RoleId = "1" } 
+
+
 );
         }
 

@@ -10,7 +10,7 @@ using Backend.Models;
 
 namespace Backend.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[Action]")]
     [ApiController]
     public class ExtraitsController : ControllerBase
     {
@@ -34,6 +34,28 @@ namespace Backend.Controllers
             }
 
             return extrait;
+
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Extrait>> GetExtraitFile(int id)
+        {
+            var extrait = await _context.Extraits.FindAsync(id);
+
+            if (extrait == null)
+            {
+                return NotFound();
+            }
+
+            var filePath = Path.Combine("Assets", extrait.FileName + extrait.MimeType);
+
+            if (!System.IO.File.Exists(filePath))
+                return NotFound();
+
+
+            var fileBytes = System.IO.File.ReadAllBytes(filePath);
+            return File(fileBytes, "application/pdf");
+
         }
 
         // PUT: api/Extraits/5
