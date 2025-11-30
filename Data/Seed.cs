@@ -48,13 +48,14 @@ namespace Backend.Data
         {
             IdentityRole adminRole = new()
             {
-                Id = "00000000-0000-0000-0000-000000000002",
+                Id = "1",
                 Name = BackendContext.ADMIN_ROLE,
                 NormalizedName = BackendContext.ADMIN_ROLE.ToUpper()
             };
 
             return [adminRole];
         }
+
 
         public static Event[] SeedEvents()
         {
