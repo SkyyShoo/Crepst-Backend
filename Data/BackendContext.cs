@@ -27,12 +27,15 @@ namespace Backend.Data
             builder.Entity<IdentityRole>().HasData(Seed.SeedRoles());
             builder.Entity<Event>().HasData(Seed.SeedEvents());
             builder.Entity<Extrait>().HasData(Seed.SeedExtraits());
+            builder.Entity<Comment>().HasData(Seed.SeedComments());
 
             builder.Entity<IdentityUserRole<string>>().HasData(
     new IdentityUserRole<string> { UserId = "00000000-0000-0000-0000-000000000001", RoleId = "1" } 
 );
             builder.Entity<IdentityUserRole<string>>().HasData(
     new IdentityUserRole<string> { UserId = "00000000-0000-0000-0000-000000000002", RoleId = "1" } 
+
+
 );
         }
 
@@ -40,5 +43,7 @@ namespace Backend.Data
         public DbSet<Backend.Models.Extrait> Extraits { get; set; } = default!;
 
         public DbSet<Backend.Models.Event> Events { get; set; } = default!;
+
+        public DbSet<Comment> Comments { get; set; } = default!;
     }
 }

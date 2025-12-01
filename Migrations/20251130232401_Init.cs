@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Backend.Migrations
 {
     /// <inheritdoc />
-    public partial class Seed : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -61,7 +61,9 @@ namespace Backend.Migrations
                     Titre = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Resumer = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Lieu = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Lieu = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ExtraitId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CommentsId = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -193,6 +195,33 @@ namespace Backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Comments",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Text = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    EventId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Comments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Comments_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Comments_Events_EventId",
+                        column: x => x.EventId,
+                        principalTable: "Events",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "EventUser",
                 columns: table => new
                 {
@@ -243,26 +272,40 @@ namespace Backend.Migrations
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
-                values: new object[] { "00000000-0000-0000-0000-000000000002", null, "admin", "ADMIN" });
+                values: new object[] { "1", null, "admin", "ADMIN" });
 
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
                 columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
                 values: new object[,]
                 {
-                    { "00000000-0000-0000-0000-000000000001", 0, "e212e504-e7b4-4c7f-9730-03076871e14e", "seed@example.invalid", true, true, null, "PABLO@ADMIN.COM", "PABLO", "REMOVED_PASSWORD_HASH", null, false, "fb76f82b-6801-488c-a9cc-cf23600aae3f", false, "pablo" },
-                    { "00000000-0000-0000-0000-000000000002", 0, "f0468e95-a5bc-46ce-a365-061afad34884", "seed@example.invalid", true, true, null, "SAM@ADMIN.COM", "SAM", "REMOVED_PASSWORD_HASH", null, false, "7a2e0b46-1c62-446a-ba55-a88915b838d1", false, "sam" }
+                    { "00000000-0000-0000-0000-000000000001", 0, "3a8ad87a-7063-44db-b448-868f326a1267", "seed@example.invalid", true, true, null, "PABLO@ADMIN.COM", "PABLO", "REMOVED_PASSWORD_HASH", null, false, "d26d379b-9dbe-401e-978e-89168c3146d6", false, "pablo" },
+                    { "00000000-0000-0000-0000-000000000002", 0, "18255f6e-04f1-4cbc-baa4-6e530d522b8d", "seed@example.invalid", true, true, null, "SAM@ADMIN.COM", "SAM", "REMOVED_PASSWORD_HASH", null, false, "58d680e3-82b7-4028-a062-a3af739940bf", false, "sam" }
                 });
 
             migrationBuilder.InsertData(
                 table: "Events",
-                columns: new[] { "Id", "Date", "Lieu", "Resumer", "Titre" },
-                values: new object[] { 1, new DateTime(2024, 7, 15, 20, 0, 0, 0, DateTimeKind.Unspecified), "Salle de Concert Paris", "Une soirée inoubliable avec les meilleurs musiciens de jazz.", "Concert de Jazz" });
+                columns: new[] { "Id", "CommentsId", "Date", "ExtraitId", "Lieu", "Resumer", "Titre" },
+                values: new object[] { 1, "[1]", new DateTime(2024, 7, 15, 20, 0, 0, 0, DateTimeKind.Unspecified), "[1]", "Salle de Concert Paris", "Une soirée inoubliable avec les meilleurs musiciens de jazz.", "Concert de Jazz" });
 
             migrationBuilder.InsertData(
                 table: "Extraits",
                 columns: new[] { "Id", "Auteur", "FileName", "MaisonEdition", "MimeType", "NumPages", "Titre" },
                 values: new object[] { 1, "F. Scott Fitzgerald", "Test", "Scribner", ".pdf", 180, "Le Grand Gatsby" });
+
+            migrationBuilder.InsertData(
+                table: "AspNetUserRoles",
+                columns: new[] { "RoleId", "UserId" },
+                values: new object[,]
+                {
+                    { "1", "00000000-0000-0000-0000-000000000001" },
+                    { "1", "00000000-0000-0000-0000-000000000002" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Comments",
+                columns: new[] { "Id", "Date", "EventId", "Text", "UserId" },
+                values: new object[] { 1, new DateTime(2024, 6, 1, 14, 25, 2, 0, DateTimeKind.Unspecified), 1, "Un extrait fascinant", null });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -304,6 +347,16 @@ namespace Backend.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Comments_EventId",
+                table: "Comments",
+                column: "EventId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Comments_UserId",
+                table: "Comments",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_EventExtrait_ExtraitsId",
                 table: "EventExtrait",
                 column: "ExtraitsId");
@@ -331,6 +384,9 @@ namespace Backend.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "Comments");
 
             migrationBuilder.DropTable(
                 name: "EventExtrait");

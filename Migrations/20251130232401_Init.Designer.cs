@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.Migrations
 {
     [DbContext(typeof(BackendContext))]
-    [Migration("20251130033439_Seed")]
-    partial class Seed
+    [Migration("20251130232401_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -28,6 +28,45 @@ namespace Backend.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Backend.Models.Comment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EventId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Comments");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Date = new DateTime(2024, 6, 1, 14, 25, 2, 0, DateTimeKind.Unspecified),
+                            EventId = 1,
+                            Text = "Un extrait fascinant"
+                        });
+                });
+
             modelBuilder.Entity("Backend.Models.Event", b =>
                 {
                     b.Property<int>("Id")
@@ -36,8 +75,14 @@ namespace Backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("CommentsId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("ExtraitId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Lieu")
                         .IsRequired()
@@ -59,7 +104,9 @@ namespace Backend.Migrations
                         new
                         {
                             Id = 1,
+                            CommentsId = "[1]",
                             Date = new DateTime(2024, 7, 15, 20, 0, 0, 0, DateTimeKind.Unspecified),
+                            ExtraitId = "[1]",
                             Lieu = "Salle de Concert Paris",
                             Resumer = "Une soirée inoubliable avec les meilleurs musiciens de jazz.",
                             Titre = "Concert de Jazz"
@@ -183,7 +230,7 @@ namespace Backend.Migrations
                         {
                             Id = "00000000-0000-0000-0000-000000000001",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "e212e504-e7b4-4c7f-9730-03076871e14e",
+                            ConcurrencyStamp = "3a8ad87a-7063-44db-b448-868f326a1267",
                             Email = "seed@example.invalid",
                             EmailConfirmed = true,
                             LockoutEnabled = true,
@@ -191,7 +238,7 @@ namespace Backend.Migrations
                             NormalizedUserName = "PABLO",
                             PasswordHash = "REMOVED_PASSWORD_HASH",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "fb76f82b-6801-488c-a9cc-cf23600aae3f",
+                            SecurityStamp = "d26d379b-9dbe-401e-978e-89168c3146d6",
                             TwoFactorEnabled = false,
                             UserName = "pablo"
                         },
@@ -199,7 +246,7 @@ namespace Backend.Migrations
                         {
                             Id = "00000000-0000-0000-0000-000000000002",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "f0468e95-a5bc-46ce-a365-061afad34884",
+                            ConcurrencyStamp = "18255f6e-04f1-4cbc-baa4-6e530d522b8d",
                             Email = "seed@example.invalid",
                             EmailConfirmed = true,
                             LockoutEnabled = true,
@@ -207,7 +254,7 @@ namespace Backend.Migrations
                             NormalizedUserName = "SAM",
                             PasswordHash = "REMOVED_PASSWORD_HASH",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "7a2e0b46-1c62-446a-ba55-a88915b838d1",
+                            SecurityStamp = "58d680e3-82b7-4028-a062-a3af739940bf",
                             TwoFactorEnabled = false,
                             UserName = "sam"
                         });
@@ -272,7 +319,7 @@ namespace Backend.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "00000000-0000-0000-0000-000000000002",
+                            Id = "1",
                             Name = "admin",
                             NormalizedName = "ADMIN"
                         });
@@ -363,6 +410,18 @@ namespace Backend.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = "00000000-0000-0000-0000-000000000001",
+                            RoleId = "1"
+                        },
+                        new
+                        {
+                            UserId = "00000000-0000-0000-0000-000000000002",
+                            RoleId = "1"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -382,6 +441,21 @@ namespace Backend.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("Backend.Models.Comment", b =>
+                {
+                    b.HasOne("Backend.Models.Event", null)
+                        .WithMany("Comments")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Backend.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("EventExtrait", b =>
@@ -463,6 +537,11 @@ namespace Backend.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Backend.Models.Event", b =>
+                {
+                    b.Navigation("Comments");
                 });
 #pragma warning restore 612, 618
         }
