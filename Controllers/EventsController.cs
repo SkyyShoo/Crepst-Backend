@@ -42,6 +42,12 @@ namespace Backend.Controllers
             return @event;
         }
 
+        [HttpGet]
+        public async Task<ActionResult<Event>> NextEvent()
+        {
+            return await _context.Events.OrderBy(p=>p.Date).LastAsync();
+        }
+
         // PUT: api/Events/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
