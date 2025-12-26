@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Backend.Data;
 using Backend.Models;
+using Backend.Models.DTOs;
 
 namespace Backend.Controllers
 {
@@ -25,7 +26,7 @@ namespace Backend.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Event>>> GetEvents()
         {
-            return await _context.Events.ToListAsync();
+            return await _context.Events.OrderByDescending(p => p.Date).ToListAsync();
         }
 
         // GET: api/Events/5
@@ -82,12 +83,13 @@ namespace Backend.Controllers
         // POST: api/Events
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Event>> PostEvent(Event @event)
+        public async Task<ActionResult<Event>> CreateEvent(EventDTO @eventDTO)
         {
+            Event @event = new Event{Id = 0, Titre = @eventDTO.Title, Date = @eventDTO.Date,Lieu = @eventDTO.Lieu, Resumer = @eventDTO.Resumer};
             _context.Events.Add(@event);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetEvent", new { id = @event.Id }, @event);
+            return Ok(new {message = "Event ajouté !"});
         }
 
         // DELETE: api/Events/5

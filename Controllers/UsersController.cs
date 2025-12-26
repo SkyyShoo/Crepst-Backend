@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Controllers
 {
@@ -91,6 +92,11 @@ namespace Backend.Controllers
                 return StatusCode(StatusCodes.Status400BadRequest,
                     new { Message = "Le nom d'utilisateur ou le mot de passe est invalide." });
             }
+        }
+        [HttpGet]
+        public async Task<List<User>> GetAll()
+        {
+            return await _userManager.Users.ToListAsync();
         }
     }
 }
