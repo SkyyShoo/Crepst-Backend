@@ -1,18 +1,39 @@
 ﻿using Backend.Data;
+using Backend.Helpers;
 using Backend.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using System.Globalization;
 using System.Text;
+
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Services.AddDbContext<BackendContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("BackendContext") ?? throw new InvalidOperationException("Connection string 'BackendContext' not found."));
     options.UseLazyLoadingProxies();
 });
-builder.Services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<BackendContext>();
+
+// Configuration de la localisation en français
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[] { new CultureInfo("fr-FR") };
+    options.DefaultRequestCulture = new RequestCulture("fr-FR");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+});
+
+// Ajout du IdentityErrorDescriber personnalisé
+builder.Services.AddIdentity<User, IdentityRole>()
+    .AddEntityFrameworkStores<BackendContext>()
+    .AddErrorDescriber<FrenchIdentityErrorDescriber>()
+    .AddDefaultTokenProviders();
 
 builder.Services.Configure<IdentityOptions>(options =>
 {
@@ -30,7 +51,6 @@ builder.Services.AddAuthentication(options =>
     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(options =>
 {
-
     options.SaveToken = true;
     options.RequireHttpsMetadata = false;
     options.TokenValidationParameters = new TokenValidationParameters()
@@ -40,9 +60,10 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = "http://localhost:4200",
         ValidIssuer = "https://localhost:7272",
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8
-            .GetBytes("REMOVED_JWT_KEY")) // Clé pour déchiffrer les tokens
+            .GetBytes("REMOVED_JWT_KEY"))
     };
 });
+
 // Add services to the container.
 builder.Services.AddCors(options =>
 {
@@ -54,8 +75,8 @@ builder.Services.AddCors(options =>
             .AllowCredentials()
     );
 });
+
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -68,14 +89,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Activation de la localisation
+app.UseRequestLocalization();
+
 app.UseHttpsRedirection();
-
 app.UseAuthentication();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.UseCors("AllowAngular");
 
 app.Run();
