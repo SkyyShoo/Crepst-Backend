@@ -8,6 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Backend.Data;
 
 namespace Backend.Controllers
 {
@@ -16,10 +17,14 @@ namespace Backend.Controllers
     public class UsersController : ControllerBase
     {
         private readonly UserManager<User> _userManager;
+        private readonly BackendContext _context;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public UsersController(UserManager<User> userManager)
+        public UsersController(UserManager<User> userManager, BackendContext backendContext, RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
+            _context = backendContext;
+            _roleManager = roleManager;
         }
 
         [HttpPost]
@@ -51,6 +56,13 @@ namespace Backend.Controllers
                 return StatusCode(StatusCodes.Status400BadRequest,
                     new { Message = "La création de l'utilisateur a échoué.", Details = errors });
             }
+            if (!await _roleManager.RoleExistsAsync("Utilisateur"))
+            {
+                
+                await _roleManager.CreateAsync(new IdentityRole("Utilisateur"));
+            }
+
+            await _userManager.AddToRoleAsync(user, "Utilisateur");
             return Ok(new { Message = "Inscription réussie ! 🥳" });
         }
 
@@ -94,9 +106,26 @@ namespace Backend.Controllers
             }
         }
         [HttpGet]
-        public async Task<List<User>> GetAll()
+        public async Task<List<UserDTO>> GetAll()
         {
-            return await _userManager.Users.ToListAsync();
+            // On utilise une requête LINQ pour projeter les données vers le DTO
+            var users = await _userManager.Users.Select(user => new UserDTO
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                Email = user.Email,
+
+                // C'est ici que la magie opère : on va chercher les rôles liés
+                Role = _context.UserRoles
+                                .Where(ur => ur.UserId == user.Id)
+                                .Join(_context.Roles,
+                                      ur => ur.RoleId,
+                                      r => r.Id,
+                                      (ur, r) => r.Name)
+                                .First()
+            }).ToListAsync();
+
+            return users;
         }
     }
 }
