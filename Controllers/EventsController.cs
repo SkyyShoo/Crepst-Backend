@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Backend.Data;
 using Backend.Models;
 using Backend.Models.DTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Backend.Controllers
 {
@@ -83,6 +84,7 @@ namespace Backend.Controllers
         // POST: api/Events
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize(Roles = "admin,moderator")]
         public async Task<ActionResult<Event>> CreateEvent(EventDTO @eventDTO)
         {
             Event @event = new Event{Id = 0, Titre = @eventDTO.Title, Date = @eventDTO.Date,Lieu = @eventDTO.Lieu, Resumer = @eventDTO.Resumer};
