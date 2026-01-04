@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pag
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Backend.Controllers
@@ -124,18 +125,24 @@ namespace Backend.Controllers
 
         // DELETE: api/Comments/5
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeleteComment(int id)
         {
+            User? user = await _userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            if(user == null) return NotFound("Utilisateur introuvable");
+
             var comment = await _context.Comments.FindAsync(id);
-            if (comment == null)
+            if (comment == null) return NotFound("Commentaire introuvable");
+
+            var roles = await _userManager.GetRolesAsync(user);
+
+            if (user.Id == comment.User.Id || roles.Contains("admin") || roles.Contains("moderator"))
             {
-                return NotFound();
+                _context.Comments.Remove(comment);
+                await _context.SaveChangesAsync();
+                return Ok(new {Message = "Commentaire supprimé avec succès"});
             }
-
-            _context.Comments.Remove(comment);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            return Unauthorized("Impossible de supprimer un commentaire qui ne vous appartient pas");
         }
 
         private bool CommentExists(int id)
