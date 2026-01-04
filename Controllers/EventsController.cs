@@ -87,7 +87,7 @@ namespace Backend.Controllers
         [Authorize(Roles = "admin,moderator")]
         public async Task<ActionResult<Event>> CreateEvent(EventDTO @eventDTO)
         {
-            Event @event = new Event{Id = 0, Titre = @eventDTO.Title, Date = @eventDTO.Date,Lieu = @eventDTO.Lieu, Resumer = @eventDTO.Resumer};
+            Event @event = new Event{Titre = @eventDTO.Title, Date = @eventDTO.Date,Lieu = @eventDTO.Lieu, Resumer = @eventDTO.Resumer};
             _context.Events.Add(@event);
             await _context.SaveChangesAsync();
 

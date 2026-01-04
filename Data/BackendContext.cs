@@ -18,6 +18,8 @@ namespace Backend.Data
         }
 
         public const string ADMIN_ROLE = "admin";
+        public const string MODERATOR_ROLE = "moderator";
+        public const string UTILISATEUR_ROLE = "utilisateur";
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -26,7 +28,6 @@ namespace Backend.Data
             builder.Entity<User>().HasData(Seed.SeedUsers());
             builder.Entity<IdentityRole>().HasData(Seed.SeedRoles());
             builder.Entity<Event>().HasData(Seed.SeedEvents());
-            builder.Entity<Extrait>().HasData(Seed.SeedExtraits());
             builder.Entity<Comment>().HasData(Seed.SeedComments());
 
             builder.Entity<IdentityUserRole<string>>().HasData(

@@ -2,20 +2,22 @@
 using Backend.Helpers;
 using Backend.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Globalization;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configuration de la base de données
 builder.Services.AddDbContext<BackendContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("BackendContext") ?? throw new InvalidOperationException("Connection string 'BackendContext' not found."));
-    options.UseLazyLoadingProxies();
+    options.UseSqlServer(builder.Configuration.GetConnectionString("BackendContext")
+        ?? throw new InvalidOperationException("Connection string 'BackendContext' not found."));
+    options.UseLazyLoadingProxies(); // COMMENTEZ OU SUPPRIMEZ CETTE LIGNE pour éviter les cycles
 });
 
 // Configuration de la localisation en français
@@ -29,7 +31,7 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     options.SupportedUICultures = supportedCultures;
 });
 
-// Ajout du IdentityErrorDescriber personnalisé
+// Configuration d'Identity avec le descripteur d'erreurs en français
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<BackendContext>()
     .AddErrorDescriber<FrenchIdentityErrorDescriber>()
@@ -44,6 +46,7 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequireNonAlphanumeric = false;
 });
 
+// Configuration de l'authentification JWT
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -64,11 +67,11 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Add services to the container.
+// Configuration CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular",
-        builder => builder
+        policy => policy
             .WithOrigins("http://localhost:4200")
             .AllowAnyHeader()
             .AllowAnyMethod()
@@ -76,13 +79,38 @@ builder.Services.AddCors(options =>
     );
 });
 
-builder.Services.AddControllers();
+// Configuration des contrôleurs avec gestion JSON des références circulaires
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // AJOUTEZ CES LIGNES pour gérer les cycles de références
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    });
+
+// Configuration pour l'upload de fichiers volumineux
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.ValueLengthLimit = int.MaxValue;
+    options.MultipartBodyLengthLimit = 104857600; // 100 MB
+    options.MultipartHeadersLengthLimit = int.MaxValue;
+    options.MemoryBufferThreshold = int.MaxValue;
+});
+
+// Configuration de Kestrel pour les fichiers volumineux
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.Limits.MaxRequestBodySize = 104857600; // 100 MB
+    serverOptions.Limits.RequestHeadersTimeout = TimeSpan.FromMinutes(5);
+    serverOptions.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(5);
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configuration du pipeline HTTP
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -92,10 +120,17 @@ if (app.Environment.IsDevelopment())
 // Activation de la localisation
 app.UseRequestLocalization();
 
+// CORS DOIT ÊTRE AVANT Authentication
+app.UseCors("AllowAngular");
+
 app.UseHttpsRedirection();
+
+// Servir les fichiers statiques (pour les PDFs uploadés)
+app.UseStaticFiles();
+
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
-app.UseCors("AllowAngular");
 
 app.Run();

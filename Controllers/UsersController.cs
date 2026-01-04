@@ -8,6 +8,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Backend.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Backend.Controllers
 {
@@ -16,10 +18,14 @@ namespace Backend.Controllers
     public class UsersController : ControllerBase
     {
         private readonly UserManager<User> _userManager;
+        private readonly BackendContext _context;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public UsersController(UserManager<User> userManager)
+        public UsersController(UserManager<User> userManager, BackendContext backendContext, RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
+            _context = backendContext;
+            _roleManager = roleManager;
         }
 
         [HttpPost]
@@ -51,6 +57,7 @@ namespace Backend.Controllers
                 return StatusCode(StatusCodes.Status400BadRequest,
                     new { Message = "La création de l'utilisateur a échoué.", Details = errors });
             }
+            await _userManager.AddToRoleAsync(user, "Utilisateur");
             return Ok(new { Message = "Inscription réussie ! 🥳" });
         }
 
@@ -94,9 +101,55 @@ namespace Backend.Controllers
             }
         }
         [HttpGet]
-        public async Task<List<User>> GetAll()
+        public async Task<List<UserDTO>> GetAll()
         {
-            return await _userManager.Users.ToListAsync();
+            // On utilise une requête LINQ pour projeter les données vers le DTO
+            var users = await _userManager.Users.Select(user => new UserDTO
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                Email = user.Email,
+
+                // C'est ici que la magie opère : on va chercher les rôles liés
+                Role = _context.UserRoles
+                                .Where(ur => ur.UserId == user.Id)
+                                .Join(_context.Roles,
+                                      ur => ur.RoleId,
+                                      r => r.Id,
+                                      (ur, r) => r.Name)
+                                .FirstOrDefault() ?? "Aucun rôle"
+            }).ToListAsync();
+
+            return users;
+        }
+        [HttpPut]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> AddRoleAdminOrModOrRemove(AddRoleDTO addRoleDTO)
+        {
+            // Vérification que l'utilisateur est bien un administrateur
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUser = await _userManager.FindByIdAsync(currentUserId);
+
+            if (!await _userManager.IsInRoleAsync(currentUser, "Admin"))
+            {
+                    return Forbid();
+            }
+
+            User? user = await _context.Users.FindAsync(addRoleDTO.UserId);
+            if (user == null) return BadRequest("Utilisateur introuvable");
+            if (user == currentUser) return BadRequest("Un utilisateur ne peut pas modifier ou retirer son propre rôle");
+
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            if (currentRoles.Any())
+            {
+                var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                if(!removeResult.Succeeded) return BadRequest("Échec de la suppression des rôles actuels");
+            }
+
+            var addResult = await _userManager.AddToRoleAsync(user, addRoleDTO.Role);
+            if (!addResult.Succeeded) return BadRequest("Erreur lors de l'ajout du nouveau rôle");
+
+            return Ok( new {Message = "Rôle mis à jour avec succès" });
         }
     }
 }
