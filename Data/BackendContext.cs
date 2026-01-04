@@ -26,7 +26,6 @@ namespace Backend.Data
             builder.Entity<User>().HasData(Seed.SeedUsers());
             builder.Entity<IdentityRole>().HasData(Seed.SeedRoles());
             builder.Entity<Event>().HasData(Seed.SeedEvents());
-            builder.Entity<Extrait>().HasData(Seed.SeedExtraits());
             builder.Entity<Comment>().HasData(Seed.SeedComments());
 
             builder.Entity<IdentityUserRole<string>>().HasData(

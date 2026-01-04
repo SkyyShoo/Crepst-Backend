@@ -74,23 +74,6 @@ namespace Backend.Data
             ];
         }
 
-        public static Extrait[] SeedExtraits()
-        {
-            return
-            [
-                new Extrait
-                {
-                Id= 1,
-                Titre= "Le Grand Gatsby",
-                Auteur= "F. Scott Fitzgerald",
-                MaisonEdition= "Scribner",
-                NumPages= 180,
-                FileName= "Test",
-                MimeType= ".pdf"
-                }
-            ];
-        }
-
         public static Comment[] SeedComments()
         {
             return
