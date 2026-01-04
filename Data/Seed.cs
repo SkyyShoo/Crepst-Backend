@@ -52,8 +52,20 @@ namespace Backend.Data
                 Name = BackendContext.ADMIN_ROLE,
                 NormalizedName = BackendContext.ADMIN_ROLE.ToUpper()
             };
+            IdentityRole moderatorRole = new()
+            {
+                Id = "2",
+                Name = BackendContext.MODERATOR_ROLE,
+                NormalizedName = BackendContext.MODERATOR_ROLE.ToUpper()
+            };
+            IdentityRole utilisateurRole = new()
+            {
+                Id = "3",
+                Name = BackendContext.UTILISATEUR_ROLE,
+                NormalizedName = BackendContext.UTILISATEUR_ROLE.ToUpper()
+            };
 
-            return [adminRole];
+            return [adminRole, moderatorRole, utilisateurRole];
         }
 
 

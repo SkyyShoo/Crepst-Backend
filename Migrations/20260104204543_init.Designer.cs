@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.Migrations
 {
     [DbContext(typeof(BackendContext))]
-    [Migration("20260104160806_init")]
+    [Migration("20260104204543_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -236,7 +236,7 @@ namespace Backend.Migrations
                         {
                             Id = "00000000-0000-0000-0000-000000000001",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "7ab3f031-2a00-4cb0-aee2-061a598eac9f",
+                            ConcurrencyStamp = "545202fb-04ca-442c-b2f9-09b77bd91e22",
                             Email = "seed@example.invalid",
                             EmailConfirmed = true,
                             LockoutEnabled = true,
@@ -244,7 +244,7 @@ namespace Backend.Migrations
                             NormalizedUserName = "PABLO",
                             PasswordHash = "REMOVED_PASSWORD_HASH",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "66540259-a71e-4bac-ac06-8c4778d48bb2",
+                            SecurityStamp = "446afde8-f874-4766-9414-561c72aba633",
                             TwoFactorEnabled = false,
                             UserName = "pablo"
                         },
@@ -252,7 +252,7 @@ namespace Backend.Migrations
                         {
                             Id = "00000000-0000-0000-0000-000000000002",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "951eddb3-8070-4015-809f-7d0347941c04",
+                            ConcurrencyStamp = "1a196f40-4083-4973-8ad9-3be0faa10b2c",
                             Email = "seed@example.invalid",
                             EmailConfirmed = true,
                             LockoutEnabled = true,
@@ -260,7 +260,7 @@ namespace Backend.Migrations
                             NormalizedUserName = "SAM",
                             PasswordHash = "REMOVED_PASSWORD_HASH",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "5d9e5cb7-a0d9-4906-a8a2-762b7c1e9a82",
+                            SecurityStamp = "8d919f47-93e6-4111-862b-5130c8bb17a0",
                             TwoFactorEnabled = false,
                             UserName = "sam"
                         });
@@ -313,6 +313,18 @@ namespace Backend.Migrations
                             Id = "1",
                             Name = "admin",
                             NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = "2",
+                            Name = "moderator",
+                            NormalizedName = "MODERATOR"
+                        },
+                        new
+                        {
+                            Id = "3",
+                            Name = "utilisateur",
+                            NormalizedName = "UTILISATEUR"
                         });
                 });
 

@@ -18,6 +18,8 @@ namespace Backend.Data
         }
 
         public const string ADMIN_ROLE = "admin";
+        public const string MODERATOR_ROLE = "moderator";
+        public const string UTILISATEUR_ROLE = "utilisateur";
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

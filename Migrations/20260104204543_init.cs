@@ -263,15 +263,20 @@ namespace Backend.Migrations
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
-                values: new object[] { "1", null, "admin", "ADMIN" });
+                values: new object[,]
+                {
+                    { "1", null, "admin", "ADMIN" },
+                    { "2", null, "moderator", "MODERATOR" },
+                    { "3", null, "utilisateur", "UTILISATEUR" }
+                });
 
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
                 columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
                 values: new object[,]
                 {
-                    { "00000000-0000-0000-0000-000000000001", 0, "7ab3f031-2a00-4cb0-aee2-061a598eac9f", "seed@example.invalid", true, true, null, "PABLO@ADMIN.COM", "PABLO", "REMOVED_PASSWORD_HASH", null, false, "66540259-a71e-4bac-ac06-8c4778d48bb2", false, "pablo" },
-                    { "00000000-0000-0000-0000-000000000002", 0, "951eddb3-8070-4015-809f-7d0347941c04", "seed@example.invalid", true, true, null, "SAM@ADMIN.COM", "SAM", "REMOVED_PASSWORD_HASH", null, false, "5d9e5cb7-a0d9-4906-a8a2-762b7c1e9a82", false, "sam" }
+                    { "00000000-0000-0000-0000-000000000001", 0, "545202fb-04ca-442c-b2f9-09b77bd91e22", "seed@example.invalid", true, true, null, "PABLO@ADMIN.COM", "PABLO", "REMOVED_PASSWORD_HASH", null, false, "446afde8-f874-4766-9414-561c72aba633", false, "pablo" },
+                    { "00000000-0000-0000-0000-000000000002", 0, "1a196f40-4083-4973-8ad9-3be0faa10b2c", "seed@example.invalid", true, true, null, "SAM@ADMIN.COM", "SAM", "REMOVED_PASSWORD_HASH", null, false, "8d919f47-93e6-4111-862b-5130c8bb17a0", false, "sam" }
                 });
 
             migrationBuilder.InsertData(
