@@ -6,4 +6,5 @@ public class EventDTO
     public DateTime Date { get; set; }
     public string Lieu { get; set; }
     public string Resumer  { get; set; }
+    public string Thematique { get; set; }
 }

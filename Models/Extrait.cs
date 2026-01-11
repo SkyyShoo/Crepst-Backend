@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.Text.Json.Serialization;
 
 namespace Backend.Models
 {
@@ -17,6 +18,8 @@ namespace Backend.Models
         public int EventId { get; set; }
         [ValidateNever]
         public virtual Event Event { get; set;  } = null!;
+        public string OwnerName { get; set; } = null!;
+        [JsonIgnore]
         public virtual User User { get; set; } = null!;
 
 

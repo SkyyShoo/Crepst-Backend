@@ -80,7 +80,6 @@ namespace Backend.Data
                 Date= new DateTime(2024, 7, 15, 20, 0, 0),
                 Resumer= "Une soirée inoubliable avec les meilleurs musiciens de jazz.",
                 Lieu= "Salle de Concert Paris",
-                ExtraitId= new List<int> { 1 },
                 CommentsId= new List<int> { 1 }
                 }
             ];

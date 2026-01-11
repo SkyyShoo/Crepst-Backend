@@ -127,16 +127,12 @@ namespace Backend.Controllers
         {
             try
             {
-                Console.WriteLine("=== DÉBUT POST EXTRAIT ===");
-
                 // Récupérer l'utilisateur
                 User? user = await _userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
                 if (user == null)
                 {
-                    Console.WriteLine("User non trouvé");
                     return Unauthorized(new { Message = "Utilisateur non authentifié" });
                 }
-                Console.WriteLine($"User trouvé: {user.UserName}");
 
                 // Lire le formulaire manuellement
                 var form = await Request.ReadFormAsync();
@@ -147,7 +143,6 @@ namespace Backend.Controllers
                 var file = form.Files.GetFile("file");
                 if (file == null || file.Length == 0)
                 {
-                    Console.WriteLine("Aucun fichier dans le formulaire");
                     return BadRequest(new { Message = "Aucun fichier reçu" });
                 }
 
@@ -156,7 +151,6 @@ namespace Backend.Controllers
                 // Vérifier le type
                 if (file.ContentType != "application/pdf")
                 {
-                    Console.WriteLine($"Type incorrect: {file.ContentType}");
                     return BadRequest(new { Message = "Seuls les fichiers PDF sont acceptés" });
                 }
 
@@ -169,7 +163,6 @@ namespace Backend.Controllers
 
                 if (!int.TryParse(form["EventId"].ToString(), out int eventId))
                 {
-                    Console.WriteLine("EventId invalide");
                     return BadRequest(new { Message = "EventId invalide" });
                 }
 
@@ -217,20 +210,17 @@ namespace Backend.Controllers
                     FileName = fileName,
                     MimeType = "application/pdf",
                     EventId = eventId,
-                    User = user
+                    User = user,
+                    OwnerName = user.UserName
                 };
 
-                Console.WriteLine("Ajout à la base de données...");
                 _context.Extraits.Add(nouvelExtrait);
                 await _context.SaveChangesAsync();
-
-                Console.WriteLine("=== FIN POST EXTRAIT (SUCCÈS) ===");
 
                 return Ok(nouvelExtrait);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"=== ERREUR EXCEPTION ===");
                 Console.WriteLine($"Message: {ex.Message}");
                 Console.WriteLine($"StackTrace: {ex.StackTrace}");
                 if (ex.InnerException != null)
@@ -243,6 +233,79 @@ namespace Backend.Controllers
                     Message = "Erreur lors de l'upload",
                     Details = ex.Message,
                     InnerException = ex.InnerException?.Message
+                });
+            }
+        }
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteExtrait(int id)
+        {
+            try
+            {
+                // 1. Récupérer l'ID de l'utilisateur connecté
+                var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(currentUserId))
+                {
+                    return Unauthorized(new { Message = "Utilisateur non authentifié" });
+                }
+
+                // 2. Récupérer l'extrait en base de données
+                // On inclut "User" pour vérifier que c'est bien le propriétaire qui demande la suppression
+                var extrait = await _context.Extraits
+                    .Include(e => e.User)
+                    .FirstOrDefaultAsync(e => e.Id == id);
+
+                if (extrait == null)
+                {
+                    return NotFound(new { Message = "Extrait introuvable" });
+                }
+
+                // 3. Vérification des droits (Sécurité)
+                // On vérifie si l'utilisateur connecté est bien le propriétaire de l'extrait
+                // (Tu peux ajouter une condition '|| User.IsInRole("Admin")' si tu as des admins)
+                if (extrait.User == null || extrait.User.Id != currentUserId)
+                {
+                    return StatusCode(403, new { Message = "Vous n'avez pas le droit de supprimer cet extrait." });
+                }
+
+                // 4. Supprimer le fichier physique du dossier uploads
+                if (!string.IsNullOrEmpty(extrait.FileName))
+                {
+                    string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                    string filePath = Path.Combine(uploadsFolder, extrait.FileName);
+
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        try
+                        {
+                            System.IO.File.Delete(filePath);
+                        }
+                        catch (Exception ioEx)
+                        {
+                            // On log l'erreur mais on ne bloque pas la suppression en BDD 
+                            // (sinon on se retrouve avec un enregistrement impossible à supprimer)
+                            Console.WriteLine($"Erreur suppression fichier physique: {ioEx.Message}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Le fichier physique n'existait pas (déjà supprimé ?)");
+                    }
+                }
+
+                // 5. Supprimer l'entrée en base de données
+                _context.Extraits.Remove(extrait);
+                await _context.SaveChangesAsync();
+
+
+                return Ok(new { Message = "Extrait supprimé avec succès" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Message = "Erreur lors de la suppression",
+                    Details = ex.Message
                 });
             }
         }

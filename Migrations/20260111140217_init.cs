@@ -62,6 +62,7 @@ namespace Backend.Migrations
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Resumer = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Lieu = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Thematique = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ExtraitId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CommentsId = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
@@ -242,6 +243,7 @@ namespace Backend.Migrations
                     FileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     MimeType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     EventId = table.Column<int>(type: "int", nullable: false),
+                    OwnerName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
@@ -275,14 +277,14 @@ namespace Backend.Migrations
                 columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
                 values: new object[,]
                 {
-                    { "00000000-0000-0000-0000-000000000001", 0, "545202fb-04ca-442c-b2f9-09b77bd91e22", "seed@example.invalid", true, true, null, "PABLO@ADMIN.COM", "PABLO", "REMOVED_PASSWORD_HASH", null, false, "446afde8-f874-4766-9414-561c72aba633", false, "pablo" },
-                    { "00000000-0000-0000-0000-000000000002", 0, "1a196f40-4083-4973-8ad9-3be0faa10b2c", "seed@example.invalid", true, true, null, "SAM@ADMIN.COM", "SAM", "REMOVED_PASSWORD_HASH", null, false, "8d919f47-93e6-4111-862b-5130c8bb17a0", false, "sam" }
+                    { "00000000-0000-0000-0000-000000000001", 0, "87c3c79a-5ebc-42a3-b576-7c537c0931b4", "seed@example.invalid", true, true, null, "PABLO@ADMIN.COM", "PABLO", "REMOVED_PASSWORD_HASH", null, false, "311d1bd6-e965-48d1-b9bb-8d55efb5fc59", false, "pablo" },
+                    { "00000000-0000-0000-0000-000000000002", 0, "f5492a96-d32b-4a2b-aada-8edf97667ce9", "seed@example.invalid", true, true, null, "SAM@ADMIN.COM", "SAM", "REMOVED_PASSWORD_HASH", null, false, "a508f0db-7374-47d6-8cde-896fe5014c18", false, "sam" }
                 });
 
             migrationBuilder.InsertData(
                 table: "Events",
-                columns: new[] { "Id", "CommentsId", "Date", "ExtraitId", "Lieu", "Resumer", "Titre" },
-                values: new object[] { 1, "[1]", new DateTime(2024, 7, 15, 20, 0, 0, 0, DateTimeKind.Unspecified), "[1]", "Salle de Concert Paris", "Une soirée inoubliable avec les meilleurs musiciens de jazz.", "Concert de Jazz" });
+                columns: new[] { "Id", "CommentsId", "Date", "ExtraitId", "Lieu", "Resumer", "Thematique", "Titre" },
+                values: new object[] { 1, "[1]", new DateTime(2024, 7, 15, 20, 0, 0, 0, DateTimeKind.Unspecified), null, "Salle de Concert Paris", "Une soirée inoubliable avec les meilleurs musiciens de jazz.", "", "Concert de Jazz" });
 
             migrationBuilder.InsertData(
                 table: "AspNetUserRoles",
