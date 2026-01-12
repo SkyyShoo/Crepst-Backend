@@ -242,15 +242,14 @@ namespace Backend.Controllers
         {
             try
             {
-                // 1. Récupérer l'ID de l'utilisateur connecté
+                // Récupérer l'ID de l'utilisateur connecté
                 var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrEmpty(currentUserId))
                 {
                     return Unauthorized(new { Message = "Utilisateur non authentifié" });
                 }
 
-                // 2. Récupérer l'extrait en base de données
-                // On inclut "User" pour vérifier que c'est bien le propriétaire qui demande la suppression
+                // Récupérer l'extrait en base de données
                 var extrait = await _context.Extraits
                     .Include(e => e.User)
                     .FirstOrDefaultAsync(e => e.Id == id);
@@ -260,10 +259,8 @@ namespace Backend.Controllers
                     return NotFound(new { Message = "Extrait introuvable" });
                 }
 
-                // 3. Vérification des droits (Sécurité)
-                // On vérifie si l'utilisateur connecté est bien le propriétaire de l'extrait
-                // (Tu peux ajouter une condition '|| User.IsInRole("Admin")' si tu as des admins)
-                if (extrait.User == null || extrait.User.Id != currentUserId)
+                // Vérification des droits (Sécurité)
+                if (extrait.User == null || extrait.User.Id != currentUserId && !User.IsInRole("admin") && !User.IsInRole("moderator"))
                 {
                     return StatusCode(403, new { Message = "Vous n'avez pas le droit de supprimer cet extrait." });
                 }
@@ -306,6 +303,135 @@ namespace Backend.Controllers
                 {
                     Message = "Erreur lors de la suppression",
                     Details = ex.Message
+                });
+            }
+        }
+
+        [HttpPut("{id}")]
+        [Authorize]
+        [DisableRequestSizeLimit]
+        public async Task<ActionResult<Extrait>> UpdateExtrait(int id)
+        {
+            try
+            {
+                // Récupérer l'utilisateur
+                User? user = await _userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                if (user == null)
+                {
+                    return Unauthorized(new { Message = "Utilisateur non authentifié" });
+                }
+
+                // Récupérer l'extrait existant
+                var extrait = await _context.Extraits.FindAsync(id);
+                if (extrait == null)
+                {
+                    return NotFound(new { Message = "Extrait introuvable" });
+                }
+
+                // Vérifier les permissions (propriétaire, admin ou modérateur)
+                bool isOwner = extrait.OwnerName == user.UserName;
+                bool isAdmin = User.IsInRole("admin");
+                bool isModerator = User.IsInRole("moderator");
+
+                if (!isOwner && !isAdmin && !isModerator)
+                {
+                    return Unauthorized(new {Message = "Vous n'avez pas les accès pour modifier cet extrait"});
+                }
+
+                var form = await Request.ReadFormAsync();
+
+                extrait.Auteur = form["Auteur"].ToString();
+                extrait.Titre = form["Titre"].ToString();
+                extrait.Traduction = form["Traduction"].ToString();
+                extrait.Edition = form["Edition"].ToString();
+                extrait.NumPages = form["NumPages"].ToString();
+
+                if (!string.IsNullOrEmpty(form["AnneeParution"]))
+                {
+                    if (int.TryParse(form["AnneeParution"].ToString(), out int annee))
+                    {
+                        extrait.AnneeParution = annee;
+                    }
+                }
+
+                var file = form.Files.GetFile("file");
+                if (file != null && file.Length > 0)
+                {
+                    if (file.ContentType != "application/pdf")
+                    {
+                        return BadRequest(new { Message = "Seuls les fichiers PDF sont acceptés" });
+                    }
+
+                    // Supprimer l'ancien fichier
+                    if (!string.IsNullOrEmpty(extrait.FileName))
+                    {
+                        var oldFilePath = Path.Combine(
+                            Directory.GetCurrentDirectory(),
+                            "wwwroot",
+                            "uploads",
+                            extrait.FileName
+                        );
+
+                        if (System.IO.File.Exists(oldFilePath))
+                        {
+                            try
+                            {
+                                System.IO.File.Delete(oldFilePath);
+                            }
+                            catch (Exception ex)
+                            {
+
+                            }
+                        }
+                    }
+
+                    // Sauvegarder le nouveau fichier
+                    string uploadsFolder = Path.Combine(
+                        Directory.GetCurrentDirectory(),
+                        "wwwroot",
+                        "uploads"
+                    );
+
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+
+                    var fileName = Guid.NewGuid().ToString() + ".pdf";
+                    var filePath = Path.Combine(uploadsFolder, fileName);
+
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+
+
+                    // Mettre à jour le nom du fichier
+                    extrait.FileName = fileName;
+                    extrait.MimeType = "application/pdf";
+                }
+                else
+                {
+                }
+
+                // Sauvegarder les modifications
+                _context.Entry(extrait).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                return Ok(extrait);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                return StatusCode(409, new { Message = "Conflit lors de la mise à jour" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Message = "Erreur lors de la modification",
+                    Details = ex.Message,
+                    InnerException = ex.InnerException?.Message
                 });
             }
         }
