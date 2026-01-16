@@ -30,7 +30,6 @@ namespace Backend.Controllers
             _userManager = userManager;
         }
 
-        // GET: api/Comments/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Comment>> GetComment(int id)
         {
@@ -71,39 +70,38 @@ namespace Backend.Controllers
             return commentDTOs;
         }
 
-        // PUT: api/Comments/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutComment(int id, Comment comment)
+        [Authorize]
+        public async Task<ActionResult<Comment>> UpdateComment(int id, [FromBody] UpdateCommentDto dto)
         {
-            if (id != comment.Id)
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (currentUserId == null)
             {
-                return BadRequest();
+                return Unauthorized(new { Message = "Utilisateur non authentifié" });
             }
+
+            var comment = await _context.Comments.FindAsync(id);
+            if (comment == null)
+            {
+                return NotFound(new { Message = "Commentaire introuvable" });
+            }
+
+            User? user = await _userManager.FindByIdAsync(currentUserId);
+            bool isOwner = comment.User.Id == user?.Id;
+
+            if (!isOwner)
+            {
+                return Forbid();
+            }
+
+            comment.Text = dto.Text;
 
             _context.Entry(comment).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CommentExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            return Ok(comment);
         }
 
-        // POST: api/Comments
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [Authorize]
         public async Task<ActionResult<Comment>> PostComment(CommentDTO commentDTO)
@@ -123,7 +121,6 @@ namespace Backend.Controllers
             return Ok(commentDTO);
         }
 
-        // DELETE: api/Comments/5
         [HttpDelete("{id}")]
         [Authorize]
         public async Task<IActionResult> DeleteComment(int id)

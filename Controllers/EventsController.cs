@@ -24,14 +24,12 @@ namespace Backend.Controllers
             _context = context;
         }
 
-        // GET: api/Events
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Event>>> GetEvents()
         {
             return await _context.Events.OrderByDescending(p => p.Date).ToListAsync();
         }
 
-        // GET: api/Events/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Event>> GetEvent(int id)
         {
@@ -51,8 +49,6 @@ namespace Backend.Controllers
             return await _context.Events.OrderBy(p=>p.Date).LastAsync();
         }
 
-        // PUT: api/Events/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutEvent(int id, Event @event)
         {
@@ -82,8 +78,6 @@ namespace Backend.Controllers
             return NoContent();
         }
 
-        // POST: api/Events
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [Authorize(Roles = "admin,moderator")]
         public async Task<ActionResult<Event>> CreateEvent(EventDTO @eventDTO)
@@ -99,7 +93,6 @@ namespace Backend.Controllers
             return Ok(new {message = "Event ajouté !"});
         }
 
-        // DELETE: api/Events/5
         [HttpDelete("{id}")]
         [Authorize(Roles = "admin,moderator")]
         public async Task<IActionResult> DeleteEvent(int id)
