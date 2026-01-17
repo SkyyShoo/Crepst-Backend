@@ -77,7 +77,7 @@ namespace Backend.Data
                 {
                 Id= 1,
                 Titre= "Concert de Jazz",
-                Date= new DateTime(2024, 7, 15, 20, 0, 0),
+                Date= new DateTime(2024, 7, 15, 20, 0, 0, DateTimeKind.Utc),
                 Resumer= "Une soirée inoubliable avec les meilleurs musiciens de jazz.",
                 Lieu= "Salle de Concert Paris",
                 CommentsId= new List<int> { 1 }
@@ -93,7 +93,7 @@ namespace Backend.Data
                 {
                 Id= 1,
                 Text= "Un extrait fascinant",
-                Date= new DateTime(2024, 6, 1, 14, 25, 2),
+                Date= new DateTime(2024, 6, 1, 14, 25, 2, DateTimeKind.Utc),
                 EventId= 1
                 }
             ];

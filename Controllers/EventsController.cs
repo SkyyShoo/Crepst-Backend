@@ -86,7 +86,7 @@ namespace Backend.Controllers
             {
                 return Unauthorized(new { Message = "L'utilisateur n'a pas accès à créer un événement" });
             }
-            Event @event = new Event{Titre = @eventDTO.Title, Date = @eventDTO.Date,Lieu = @eventDTO.Lieu, Resumer = @eventDTO.Resumer, Thematique = eventDTO.Thematique};
+            Event @event = new Event{Titre = @eventDTO.Title, Date = DateTime.SpecifyKind(eventDTO.Date, DateTimeKind.Utc), Lieu = @eventDTO.Lieu, Resumer = @eventDTO.Resumer, Thematique = eventDTO.Thematique};
             _context.Events.Add(@event);
             await _context.SaveChangesAsync();
 

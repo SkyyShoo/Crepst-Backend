@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -8,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Backend.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class initialcreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,10 +19,10 @@ namespace Backend.Migrations
                 name: "AspNetRoles",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -31,21 +33,21 @@ namespace Backend.Migrations
                 name: "AspNetUsers",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -56,15 +58,15 @@ namespace Backend.Migrations
                 name: "Events",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Titre = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Resumer = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Lieu = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Thematique = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ExtraitId = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CommentsId = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Titre = table.Column<string>(type: "text", nullable: false),
+                    Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Resumer = table.Column<string>(type: "text", nullable: false),
+                    Lieu = table.Column<string>(type: "text", nullable: false),
+                    Thematique = table.Column<string>(type: "text", nullable: false),
+                    ExtraitId = table.Column<List<int>>(type: "integer[]", nullable: true),
+                    CommentsId = table.Column<List<int>>(type: "integer[]", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -75,11 +77,11 @@ namespace Backend.Migrations
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    RoleId = table.Column<string>(type: "text", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -96,11 +98,11 @@ namespace Backend.Migrations
                 name: "AspNetUserClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -117,10 +119,10 @@ namespace Backend.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    ProviderKey = table.Column<string>(type: "text", nullable: false),
+                    ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
+                    UserId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -137,8 +139,8 @@ namespace Backend.Migrations
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    RoleId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -161,10 +163,10 @@ namespace Backend.Migrations
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Value = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -181,12 +183,12 @@ namespace Backend.Migrations
                 name: "Comments",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Text = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    EventId = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Text = table.Column<string>(type: "text", nullable: false),
+                    Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    EventId = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -208,8 +210,8 @@ namespace Backend.Migrations
                 name: "EventUser",
                 columns: table => new
                 {
-                    EventsId = table.Column<int>(type: "int", nullable: false),
-                    ParticipantsId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    EventsId = table.Column<int>(type: "integer", nullable: false),
+                    ParticipantsId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -232,19 +234,19 @@ namespace Backend.Migrations
                 name: "Extraits",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Auteur = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Titre = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Traduction = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AnneeParution = table.Column<int>(type: "int", nullable: true),
-                    Edition = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    NumPages = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MimeType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    EventId = table.Column<int>(type: "int", nullable: false),
-                    OwnerName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Auteur = table.Column<string>(type: "text", nullable: false),
+                    Titre = table.Column<string>(type: "text", nullable: false),
+                    Traduction = table.Column<string>(type: "text", nullable: false),
+                    AnneeParution = table.Column<int>(type: "integer", nullable: true),
+                    Edition = table.Column<string>(type: "text", nullable: false),
+                    NumPages = table.Column<string>(type: "text", nullable: false),
+                    FileName = table.Column<string>(type: "text", nullable: false),
+                    MimeType = table.Column<string>(type: "text", nullable: false),
+                    EventId = table.Column<int>(type: "integer", nullable: false),
+                    OwnerName = table.Column<string>(type: "text", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -277,14 +279,14 @@ namespace Backend.Migrations
                 columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
                 values: new object[,]
                 {
-                    { "00000000-0000-0000-0000-000000000001", 0, "87c3c79a-5ebc-42a3-b576-7c537c0931b4", "seed@example.invalid", true, true, null, "PABLO@ADMIN.COM", "PABLO", "REMOVED_PASSWORD_HASH", null, false, "311d1bd6-e965-48d1-b9bb-8d55efb5fc59", false, "pablo" },
-                    { "00000000-0000-0000-0000-000000000002", 0, "f5492a96-d32b-4a2b-aada-8edf97667ce9", "seed@example.invalid", true, true, null, "SAM@ADMIN.COM", "SAM", "REMOVED_PASSWORD_HASH", null, false, "a508f0db-7374-47d6-8cde-896fe5014c18", false, "sam" }
+                    { "00000000-0000-0000-0000-000000000001", 0, "b7500180-b622-44e0-9f32-5043d8771698", "seed@example.invalid", true, true, null, "PABLO@ADMIN.COM", "PABLO", "REMOVED_PASSWORD_HASH", null, false, "32bc123e-1f2c-4381-94a8-6fc3aec4d3c6", false, "pablo" },
+                    { "00000000-0000-0000-0000-000000000002", 0, "1905f3f9-f44b-41e1-9f1e-580959e9339e", "seed@example.invalid", true, true, null, "SAM@ADMIN.COM", "SAM", "REMOVED_PASSWORD_HASH", null, false, "538d1890-9e03-480d-a377-5a4d036da25f", false, "sam" }
                 });
 
             migrationBuilder.InsertData(
                 table: "Events",
                 columns: new[] { "Id", "CommentsId", "Date", "ExtraitId", "Lieu", "Resumer", "Thematique", "Titre" },
-                values: new object[] { 1, "[1]", new DateTime(2024, 7, 15, 20, 0, 0, 0, DateTimeKind.Unspecified), null, "Salle de Concert Paris", "Une soirée inoubliable avec les meilleurs musiciens de jazz.", "", "Concert de Jazz" });
+                values: new object[] { 1, new List<int> { 1 }, new DateTime(2024, 7, 15, 20, 0, 0, 0, DateTimeKind.Utc), null, "Salle de Concert Paris", "Une soirée inoubliable avec les meilleurs musiciens de jazz.", "", "Concert de Jazz" });
 
             migrationBuilder.InsertData(
                 table: "AspNetUserRoles",
@@ -298,7 +300,7 @@ namespace Backend.Migrations
             migrationBuilder.InsertData(
                 table: "Comments",
                 columns: new[] { "Id", "Date", "EventId", "Text", "UserId" },
-                values: new object[] { 1, new DateTime(2024, 6, 1, 14, 25, 2, 0, DateTimeKind.Unspecified), 1, "Un extrait fascinant", null });
+                values: new object[] { 1, new DateTime(2024, 6, 1, 14, 25, 2, 0, DateTimeKind.Utc), 1, "Un extrait fascinant", null });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -309,8 +311,7 @@ namespace Backend.Migrations
                 name: "RoleNameIndex",
                 table: "AspNetRoles",
                 column: "NormalizedName",
-                unique: true,
-                filter: "[NormalizedName] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
@@ -336,8 +337,7 @@ namespace Backend.Migrations
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
-                unique: true,
-                filter: "[NormalizedUserName] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Comments_EventId",
