@@ -39,7 +39,7 @@ namespace Backend.Controllers
 
             User user = new User()
             {
-                UserName = register.Username,
+                UserName = char.ToUpper(register.Username[0]) + register.Username.Substring(1).ToLower(),
                 Email = register.Email
             };
 
