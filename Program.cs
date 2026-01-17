@@ -15,9 +15,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Configuration de la base de données
 builder.Services.AddDbContext<BackendContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("BackendContext")
-        ?? throw new InvalidOperationException("Connection string 'BackendContext' not found."));
-    options.UseLazyLoadingProxies(); // COMMENTEZ OU SUPPRIMEZ CETTE LIGNE pour éviter les cycles
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseLazyLoadingProxies();
 });
 
 // Configuration de la localisation en français

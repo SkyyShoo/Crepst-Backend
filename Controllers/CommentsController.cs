@@ -59,7 +59,7 @@ namespace Backend.Controllers
                         {
                             Text = comment.Text,
                             Id = comment.Id,
-                            Date = comment.Date,
+                            Date = DateTime.SpecifyKind(comment.Date, DateTimeKind.Utc),
                             Author = comment.User?.UserName ?? "Anonyme",
                             EventId = id
                         };
@@ -108,10 +108,14 @@ namespace Backend.Controllers
         {
             User? user = await _userManager.FindByNameAsync(commentDTO.Author);
 
+            if (commentDTO.Date != null)
+            {
+                commentDTO.Date = DateTime.UtcNow;
+            }
             Comment comment = new Comment
             {
                 Text = commentDTO.Text,
-                Date = commentDTO.Date ?? DateTime.Now,
+                Date = DateTime.SpecifyKind(commentDTO.Date, DateTimeKind.Utc),
                 User = user,
                 EventId = commentDTO.EventId
             };
