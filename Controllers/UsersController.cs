@@ -132,7 +132,7 @@ namespace Backend.Controllers
 
             if (!await _userManager.IsInRoleAsync(currentUser, "Admin"))
             {
-                    return Forbid();
+                return Forbid();
             }
 
             User? user = await _context.Users.FindAsync(addRoleDTO.UserId);
@@ -143,13 +143,77 @@ namespace Backend.Controllers
             if (currentRoles.Any())
             {
                 var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
-                if(!removeResult.Succeeded) return BadRequest("Échec de la suppression des rôles actuels");
+                if (!removeResult.Succeeded) return BadRequest("Échec de la suppression des rôles actuels");
             }
 
             var addResult = await _userManager.AddToRoleAsync(user, addRoleDTO.Role);
             if (!addResult.Succeeded) return BadRequest("Erreur lors de l'ajout du nouveau rôle");
 
-            return Ok( new {Message = "Rôle mis à jour avec succès" });
+            return Ok(new { Message = "Rôle mis à jour avec succès" });
+        }
+        [HttpPut]
+        [Authorize]
+        public async Task<IActionResult> ChangeUsername(changeUsernameDTO changeUsernameDTO)
+        {
+            if (changeUsernameDTO.NewUsername == null || changeUsernameDTO.NewUsername == "")
+                return BadRequest(new { Message = "Le nom d'utilisateur n'est pas valide" });
+
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUser = await _userManager.FindByIdAsync(currentUserId);
+            if (currentUser == null) return BadRequest(new { Message = "Utilisateur introuvable" });
+
+            var existingUser = await _userManager.FindByNameAsync(changeUsernameDTO.NewUsername);
+            if (existingUser != null && existingUser.Id != currentUserId)
+            {
+                return BadRequest(new { Message = "Ce nom d'utilisateur est déjà utilisé" });
+            }
+
+            currentUser.UserName = changeUsernameDTO.NewUsername;
+            var result = await _userManager.UpdateAsync(currentUser);
+
+            if (!result.Succeeded)
+            {
+                return BadRequest(new { Message = "Erreur lors de la mise à jour du nom d'utilisateur" });
+            }
+
+            return Ok(new { Message = "Nom d'utilisateur mis à jour avec succès" });
+        }
+        [HttpPut]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDTO changePasswordDTO)
+        {
+            if (changePasswordDTO.NewPassword == null || changePasswordDTO.NewPassword == "")
+                return BadRequest(new { Message = "Le mot de passe n'est pas valide" });
+
+            if (changePasswordDTO.CurrentPassword == null || changePasswordDTO.CurrentPassword == "")
+                return BadRequest(new { Message = "Le mot de passe actuel est requis" });
+
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUser = await _userManager.FindByIdAsync(currentUserId);
+            if (currentUser == null)
+                return BadRequest(new { Message = "Utilisateur introuvable" });
+
+            // Vérifier que le mot de passe actuel est correct
+            var isCurrentPasswordValid = await _userManager.CheckPasswordAsync(currentUser, changePasswordDTO.CurrentPassword);
+            if (!isCurrentPasswordValid)
+            {
+                return BadRequest(new { Message = "Le mot de passe actuel est incorrect" });
+            }
+
+            // Changer le mot de passe
+            var result = await _userManager.ChangePasswordAsync(
+                currentUser,
+                changePasswordDTO.CurrentPassword,
+                changePasswordDTO.NewPassword
+            );
+
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                return BadRequest(new { Message = $"Erreur lors du changement de mot de passe : {errors}" });
+            }
+
+            return Ok(new { Message = "Mot de passe mis à jour avec succès" });
         }
     }
 }
