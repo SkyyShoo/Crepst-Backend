@@ -435,5 +435,29 @@ namespace Backend.Controllers
                 });
             }
         }
+
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult> DownloadPdf(int id)
+        {
+            var extrait = await _context.Extraits.FindAsync(id);
+            if (extrait == null)
+            {
+                return NotFound(new { Message = "Extrait introuvable" });
+            }
+
+            var filePath = Path.Combine(
+                           Directory.GetCurrentDirectory(),
+                           "wwwroot",
+                           "uploads",
+                           extrait.FileName);
+
+            if (!System.IO.File.Exists(filePath))
+                return NotFound();
+
+            var fileBytes = System.IO.File.ReadAllBytes(filePath);
+            return File(fileBytes, "application/pdf", extrait.Titre);
+        }
+
     }
 }
