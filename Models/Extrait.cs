@@ -9,6 +9,7 @@ namespace Backend.Models
         public int Id { get; set; }
         public string Auteur { get; set; } = string.Empty;
         public string Titre { get; set; } = string.Empty;
+        public string Chapitre { get; set; } = string.Empty;
         public string Traduction { get; set; } = string.Empty;
         public int? AnneeParution { get; set; } = null!;
         public string Edition { get; set; } = string.Empty;   
