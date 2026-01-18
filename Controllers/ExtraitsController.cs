@@ -157,6 +157,7 @@ namespace Backend.Controllers
                 // Récupérer les autres champs
                 string auteur = form["Auteur"].ToString();
                 string titre = form["Titre"].ToString();
+                string chapitre = form["Chapitre"].ToString();
                 string traduction = form["Traduction"].ToString();
                 string edition = form["Edition"].ToString();
                 string numPages = form["NumPages"].ToString();
@@ -203,6 +204,7 @@ namespace Backend.Controllers
                 {
                     Auteur = auteur,
                     Titre = titre,
+                    Chapitre = chapitre,
                     Traduction = traduction,
                     AnneeParution = anneeParution,
                     Edition = edition,
@@ -342,6 +344,7 @@ namespace Backend.Controllers
 
                 extrait.Auteur = form["Auteur"].ToString();
                 extrait.Titre = form["Titre"].ToString();
+                extrait.Chapitre = form["Chapitre"].ToString();
                 extrait.Traduction = form["Traduction"].ToString();
                 extrait.Edition = form["Edition"].ToString();
                 extrait.NumPages = form["NumPages"].ToString();
