@@ -50,32 +50,41 @@ namespace Backend.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutEvent(int id, Event @event)
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> UpdateEvent(int id, EventDTO @eventDTO)
         {
-            if (id != @event.Id)
+            var @event = await _context.Events.FindAsync(id);
+            if (@event == null)
             {
-                return BadRequest();
+                return NotFound(new { Message = "Event introuvable" });
             }
-
-            _context.Entry(@event).State = EntityState.Modified;
-
+            
+            if (!User.IsInRole("admin"))
+            {
+                return Unauthorized(new { Message = "L'utilisateur n'a pas accès à modifier un événement" });
+            }
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!EventExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+                DateTime localDateTime = DateTime.SpecifyKind(@eventDTO.Date, DateTimeKind.Unspecified);
+            
+                TimeZoneInfo montrealTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Montreal");
+            
+                DateTime utcDateTime = TimeZoneInfo.ConvertTimeToUtc(localDateTime, montrealTimeZone);
+                
+                @event.Titre = @eventDTO.Title;
+                @event.Date = utcDateTime;
+                @event.Lieu = @eventDTO.Lieu;
+                @event.Thematique = @eventDTO.Thematique;
+                @event.Resumer = @eventDTO.Resumer;
 
-            return NoContent();
+                _context.Events.Update(@event);
+                await _context.SaveChangesAsync();
+                return Ok(new {Message = "Event modifié avec succès"});
+            }
+            catch
+            {
+                return BadRequest("Une erreur est arrivé lors de la moficiation");
+            }
         }
 
         [HttpPost]
@@ -86,7 +95,12 @@ namespace Backend.Controllers
             {
                 return Unauthorized(new { Message = "L'utilisateur n'a pas accès à créer un événement" });
             }
-            Event @event = new Event{Titre = @eventDTO.Title, Date = DateTime.SpecifyKind(eventDTO.Date, DateTimeKind.Utc), Lieu = @eventDTO.Lieu, Resumer = @eventDTO.Resumer, Thematique = eventDTO.Thematique};
+            DateTime localDateTime = DateTime.SpecifyKind(@eventDTO.Date, DateTimeKind.Unspecified);
+            
+            TimeZoneInfo montrealTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Montreal");
+            
+            DateTime utcDateTime = TimeZoneInfo.ConvertTimeToUtc(localDateTime, montrealTimeZone);
+            Event @event = new Event{Titre = @eventDTO.Title, Date = utcDateTime, Lieu = @eventDTO.Lieu, Resumer = @eventDTO.Resumer, Thematique = eventDTO.Thematique};
             _context.Events.Add(@event);
             await _context.SaveChangesAsync();
 
