@@ -32,12 +32,10 @@ namespace Backend.Controllers
             bool isAzure = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_INSTANCE_ID"));
             if (isAzure)
             {
-                // Sur Azure : utiliser /home/data qui PERSISTE
                 _pdfPath = "/home/data/pdfs";
             }
             else
             {
-                // En local : votre dossier actuel
                 _pdfPath = Path.Combine(env.ContentRootPath, "Assets", "PDF_Extrait");
             }
         }
