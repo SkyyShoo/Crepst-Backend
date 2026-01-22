@@ -80,7 +80,7 @@ namespace Backend.Controllers
                 return NotFound(new { Message = "Extrait non trouvé" });
             }
 
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "PDF", extrait.FileName);
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "PDF_Extrait", extrait.FileName);
 
             Console.WriteLine($"Recherche du fichier: {filePath}");
 
@@ -179,7 +179,7 @@ namespace Backend.Controllers
                 Console.WriteLine($"Données: Auteur={auteur}, Titre={titre}, EventId={eventId}");
 
                 // Créer le dossier uploads
-                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "PDF");
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "PDF_Extrait");
                 if (!Directory.Exists(uploadsFolder))
                 {
                     Directory.CreateDirectory(uploadsFolder);
@@ -270,7 +270,7 @@ namespace Backend.Controllers
                 // 4. Supprimer le fichier physique du dossier uploads
                 if (!string.IsNullOrEmpty(extrait.FileName))
                 {
-                    string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "PDF");
+                    string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "PDF_Extrait");
                     string filePath = Path.Combine(uploadsFolder, extrait.FileName);
 
                     if (System.IO.File.Exists(filePath))
@@ -371,7 +371,7 @@ namespace Backend.Controllers
                         var oldFilePath = Path.Combine(
                             Directory.GetCurrentDirectory(),
                             "Assets",
-                            "PDF",
+                            "PDF_Extrait",
                             extrait.FileName
                         );
 
@@ -392,7 +392,7 @@ namespace Backend.Controllers
                     string uploadsFolder = Path.Combine(
                         Directory.GetCurrentDirectory(),
                         "Assets",
-                        "PDF"
+                        "PDF_Extrait"
                     );
 
                     if (!Directory.Exists(uploadsFolder))
@@ -452,7 +452,7 @@ namespace Backend.Controllers
             var filePath = Path.Combine(
                            Directory.GetCurrentDirectory(),
                            "Assets",
-                           "PDF",
+                           "PDF_Extrait",
                            extrait.FileName);
 
             if (!System.IO.File.Exists(filePath))
