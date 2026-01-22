@@ -19,11 +19,25 @@ namespace Backend.Controllers
     {
         private readonly BackendContext _context;
         private readonly UserManager<User> _userManager;
+        private readonly IWebHostEnvironment _env;
 
-        public ExtraitsController(BackendContext context, UserManager<User> userManager)
+        private readonly string _pdfPath;
+
+        public ExtraitsController(BackendContext context, UserManager<User> userManager, IWebHostEnvironment env)
         {
             _context = context;
             _userManager = userManager;
+            _env = env;
+
+            bool isAzure = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_INSTANCE_ID"));
+            if (isAzure)
+            {
+                _pdfPath = "/home/data/pdfs";
+            }
+            else
+            {
+                _pdfPath = Path.Combine(env.ContentRootPath, "Assets", "PDF_Extrait");
+            }
         }
 
 
@@ -80,7 +94,8 @@ namespace Backend.Controllers
                 return NotFound(new { Message = "Extrait non trouvé" });
             }
 
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "PDF", extrait.FileName);
+
+            var filePath = Path.Combine(_pdfPath, extrait.FileName);
 
             Console.WriteLine($"Recherche du fichier: {filePath}");
 
@@ -179,7 +194,7 @@ namespace Backend.Controllers
                 Console.WriteLine($"Données: Auteur={auteur}, Titre={titre}, EventId={eventId}");
 
                 // Créer le dossier uploads
-                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "PDF");
+                string uploadsFolder = _pdfPath;
                 if (!Directory.Exists(uploadsFolder))
                 {
                     Directory.CreateDirectory(uploadsFolder);
@@ -270,7 +285,7 @@ namespace Backend.Controllers
                 // 4. Supprimer le fichier physique du dossier uploads
                 if (!string.IsNullOrEmpty(extrait.FileName))
                 {
-                    string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "PDF");
+                    string uploadsFolder = _pdfPath;
                     string filePath = Path.Combine(uploadsFolder, extrait.FileName);
 
                     if (System.IO.File.Exists(filePath))
@@ -369,9 +384,7 @@ namespace Backend.Controllers
                     if (!string.IsNullOrEmpty(extrait.FileName))
                     {
                         var oldFilePath = Path.Combine(
-                            Directory.GetCurrentDirectory(),
-                            "Assets",
-                            "PDF",
+                            _pdfPath,
                             extrait.FileName
                         );
 
@@ -389,11 +402,7 @@ namespace Backend.Controllers
                     }
 
                     // Sauvegarder le nouveau fichier
-                    string uploadsFolder = Path.Combine(
-                        Directory.GetCurrentDirectory(),
-                        "Assets",
-                        "PDF"
-                    );
+                    string uploadsFolder = _pdfPath;
 
                     if (!Directory.Exists(uploadsFolder))
                     {
@@ -449,11 +458,7 @@ namespace Backend.Controllers
                 return NotFound(new { Message = "Extrait introuvable" });
             }
 
-            var filePath = Path.Combine(
-                           Directory.GetCurrentDirectory(),
-                           "Assets",
-                           "PDF",
-                           extrait.FileName);
+            var filePath = _pdfPath;
 
             if (!System.IO.File.Exists(filePath))
                 return NotFound();
