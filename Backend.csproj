@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Assets\" />
+    <Folder Include="Assets\PDF_Extrait\" />
     <Folder Include="Migrations\" />
   </ItemGroup>
 
