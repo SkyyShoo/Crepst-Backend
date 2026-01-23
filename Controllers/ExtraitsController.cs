@@ -458,7 +458,7 @@ namespace Backend.Controllers
                 return NotFound(new { Message = "Extrait introuvable" });
             }
 
-            var filePath = _pdfPath;
+            var filePath = Path.Combine(_pdfPath, extrait.FileName);
 
             if (!System.IO.File.Exists(filePath))
                 return NotFound();
