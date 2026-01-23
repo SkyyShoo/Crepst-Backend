@@ -10,6 +10,8 @@ namespace Backend.Models
         public string Resumer { get; set; } = string.Empty;
         public string Lieu { get; set; } = string.Empty;
         public string Thematique { get; set; } = string.Empty;
+        public string? FileName { get; set; } = null!;
+        public string? MimeType { get; set; } = null!;
         public List<int>? ExtraitId { get; set; } = null!;
         public List<int>? CommentsId { get; set; } = null!;
         [ValidateNever]

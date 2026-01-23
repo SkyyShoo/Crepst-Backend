@@ -3,6 +3,7 @@ using Backend.Models;
 using Backend.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -18,10 +19,24 @@ namespace Backend.Controllers
     public class EventsController : ControllerBase
     {
         private readonly BackendContext _context;
+        private readonly IWebHostEnvironment _env;
 
-        public EventsController(BackendContext context)
+        private readonly string _pdfPath;
+
+        public EventsController(BackendContext context, UserManager<User> userManager, IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
+
+            bool isAzure = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_INSTANCE_ID"));
+            if (isAzure)
+            {
+                _pdfPath = "/home/data/pdfsEvent";
+            }
+            else
+            {
+                _pdfPath = Path.Combine(env.ContentRootPath, "Assets", "PDF_Event");
+            }
         }
 
         [HttpGet]
@@ -123,6 +138,21 @@ namespace Backend.Controllers
                 return NotFound(new {Message = "Événement introuvable"});
             }
 
+            if (!string.IsNullOrEmpty(@event.FileName))
+            {
+                var resumePath = Path.Combine(_pdfPath, @event.FileName);
+                if (System.IO.File.Exists(resumePath))
+                {
+                    try
+                    {
+                        System.IO.File.Delete(resumePath);
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                }
+            }
+
             var extraits = await _context.Extraits.Where(p => p.EventId == id).ToListAsync();
             foreach(var extrait in extraits)
             {
@@ -153,6 +183,174 @@ namespace Backend.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+        [HttpPost("{id}")]
+        [Authorize(Roles = "admin")]
+        [DisableRequestSizeLimit]
+        public async Task<ActionResult> UploadResume(int id)
+        {
+            try
+            {
+                // Vérifier que l'utilisateur est admin
+                if (!User.IsInRole("admin"))
+                {
+                    return Unauthorized(new { Message = "Seuls les administrateurs peuvent ajouter un résumé" });
+                }
+
+                // Récupérer l'événement
+                var @event = await _context.Events.FindAsync(id);
+                if (@event == null)
+                {
+                    return NotFound(new { Message = "Événement introuvable" });
+                }
+
+                // Lire le formulaire
+                var form = await Request.ReadFormAsync();
+                var file = form.Files.GetFile("file");
+
+                if (file == null || file.Length == 0)
+                {
+                    return BadRequest(new { Message = "Aucun fichier reçu" });
+                }
+
+                // Vérifier le type
+                if (file.ContentType != "application/pdf")
+                {
+                    return BadRequest(new { Message = "Seuls les fichiers PDF sont acceptés" });
+                }
+
+                // Supprimer l'ancien fichier si existant
+                if (!string.IsNullOrEmpty(@event.FileName))
+                {
+                    var oldFilePath = Path.Combine(_pdfPath, @event.FileName);
+                    if (System.IO.File.Exists(oldFilePath))
+                    {
+                        try
+                        {
+                            System.IO.File.Delete(oldFilePath);
+                        }
+                        catch (Exception ex)
+                        {
+                        }
+                    }
+                }
+
+                // Créer le dossier s'il n'existe pas
+                if (!Directory.Exists(_pdfPath))
+                {
+                    Directory.CreateDirectory(_pdfPath);
+                }
+
+                // Sauvegarder le nouveau fichier
+                var fileName = $"resume_{@event.Id}_{Guid.NewGuid()}.pdf";
+                var filePath = Path.Combine(_pdfPath, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // Mettre à jour l'événement
+                @event.FileName = fileName;
+                @event.MimeType = "application/pdf";
+
+                _context.Entry(@event).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    Message = "Résumé ajouté avec succès",
+                    FileName = fileName
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Message = "Erreur lors de l'upload du résumé",
+                    Details = ex.Message,
+                    InnerException = ex.InnerException?.Message
+                });
+            }
+        }
+
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetEventResume(int id)
+        {
+            try
+            {
+                var @event = await _context.Events.FindAsync(id);
+
+                if (@event == null)
+                {
+                    return NotFound(new { Message = "Événement introuvable" });
+                }
+
+                if (string.IsNullOrEmpty(@event.FileName))
+                {
+                    return NotFound(new { Message = "Aucun résumé disponible pour cet événement" });
+                }
+
+                var filePath = Path.Combine(_pdfPath, @event.FileName);
+
+                if (!System.IO.File.Exists(filePath))
+                {
+                    return NotFound(new { Message = "Fichier introuvable" });
+                }
+
+                var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+                return File(fileBytes, "application/pdf", $"Resume_{@event.Titre}.pdf");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "Erreur lors de la récupération du résumé" });
+            }
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> DeleteEventResume(int id)
+        {
+            try
+            {
+                if (!User.IsInRole("admin"))
+                {
+                    return Unauthorized(new { Message = "Seuls les administrateurs peuvent supprimer un résumé" });
+                }
+
+                var @event = await _context.Events.FindAsync(id);
+
+                if (@event == null)
+                {
+                    return NotFound(new { Message = "Événement introuvable" });
+                }
+
+                if (string.IsNullOrEmpty(@event.FileName))
+                {
+                    return NotFound(new { Message = "Aucun résumé à supprimer" });
+                }
+
+                // Supprimer le fichier
+                var filePath = Path.Combine(_pdfPath, @event.FileName);
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+
+                // Mettre à jour l'événement
+                @event.FileName = null;
+                @event.MimeType = null;
+
+                _context.Entry(@event).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                return Ok(new { Message = "Résumé supprimé avec succès" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "Erreur lors de la suppression du résumé" });
+            }
         }
 
         private bool EventExists(int id)
