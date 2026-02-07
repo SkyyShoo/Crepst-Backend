@@ -144,7 +144,7 @@ namespace Backend.Controllers
         [HttpPost]
         public async Task<ActionResult> Login(LoginDTO login)
         {
-            User? user = await _userManager.FindByEmailAsync(login.Email);
+            User? user = await _userManager.FindByNameAsync(login.Username);
 
             if (user != null && await _userManager.CheckPasswordAsync(user, login.Password))
             {
