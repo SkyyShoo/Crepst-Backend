@@ -10,6 +10,8 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Backend.Data;
 using Microsoft.AspNetCore.Authorization;
+using Backend.Services;
+using Backend.Services.Interfaces;
 
 namespace Backend.Controllers
 {
@@ -20,12 +22,17 @@ namespace Backend.Controllers
         private readonly UserManager<User> _userManager;
         private readonly BackendContext _context;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
 
-        public UsersController(UserManager<User> userManager, BackendContext backendContext, RoleManager<IdentityRole> roleManager)
+        public UsersController(UserManager<User> userManager, BackendContext backendContext, 
+            RoleManager<IdentityRole> roleManager, IEmailService emailService, IConfiguration configuration)
         {
             _userManager = userManager;
             _context = backendContext;
             _roleManager = roleManager;
+            _emailService = emailService;
+            _configuration = configuration;
         }
 
         [HttpPost]
@@ -37,10 +44,30 @@ namespace Backend.Controllers
                     new { Message = "Les deux mots de passe spécifiés sont différents." });
             }
 
+            var existingUserByEmail = await _userManager.FindByEmailAsync(register.Email);
+            if (existingUserByEmail != null)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest,
+                    new { Message = "Cet email est déjà utilisé." });
+            }
+
+            var existingUserByUsername = await _userManager.FindByNameAsync(register.Username);
+            if (existingUserByUsername != null)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest,
+                    new { Message = "Ce nom d'utilisateur est déjà pris." });
+            }
+
+            var confirmationToken = Convert.ToBase64String(Guid.NewGuid().ToByteArray())
+                                   + DateTime.UtcNow.Ticks.ToString();
+
             User user = new User()
             {
                 UserName = char.ToUpper(register.Username[0]) + register.Username.Substring(1).ToLower(),
-                Email = register.Email
+                Email = register.Email,
+                EmailConfirmed = false,
+                EmailConfirmationToken = confirmationToken,
+                EmailConfirmationTokenExpiry = DateTime.UtcNow.AddHours(24)
             };
 
             IdentityResult identityResult = await _userManager.CreateAsync(user, register.Password);
@@ -58,16 +85,74 @@ namespace Backend.Controllers
                     new { Message = "La création de l'utilisateur a échoué.", Details = errors });
             }
             await _userManager.AddToRoleAsync(user, "Utilisateur");
-            return Ok(new { Message = "Inscription réussie ! 🥳" });
+
+            try
+            {
+                await _emailService.SendConfirmationEmailAsync(user.Email, user.EmailConfirmationToken);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { Message = "Utilisateur créé mais l'envoi de l'email a échoué.", Error = ex.Message });
+            }
+
+            return Ok(new { Message = "Inscription réussie ! Vérifiez votre courriel pour confirmer votre compte." });
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> ConfirmEmail([FromQuery] string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return BadRequest(new { Message = "Token manquant." });
+            }
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.EmailConfirmationToken == token);
+
+            if (user == null)
+            {
+                return NotFound(new { Message = "Token invalide ou utilisateur introuvable." });
+            }
+
+            if (user.EmailConfirmed)
+            {
+                // Rediriger vers le frontend avec un message "déjà confirmé"
+                var frontendUrl = _configuration["FrontendUrl"];
+                return Redirect($"{frontendUrl}/login?alreadyConfirmed=true");
+            }
+
+            if (user.EmailConfirmationTokenExpiry < DateTime.UtcNow)
+            {
+                // Rediriger vers le frontend avec un message "expiré"
+                var frontendUrl = _configuration["FrontendUrl"];
+                return Redirect($"{frontendUrl}/login?expired=true");
+            }
+
+            // Confirmer l'email
+            user.EmailConfirmed = true;
+            user.EmailConfirmationToken = null;
+            user.EmailConfirmationTokenExpiry = null;
+
+            await _context.SaveChangesAsync();
+
+            // Rediriger vers le frontend avec un message de succès
+            var frontendUrlSuccess = _configuration["FrontendUrl"];
+            return Redirect($"{frontendUrlSuccess}/login?confirmed=true");
         }
 
         [HttpPost]
         public async Task<ActionResult> Login(LoginDTO login)
         {
-            User? user = await _userManager.FindByNameAsync(login.Username);
+            User? user = await _userManager.FindByEmailAsync(login.Email);
 
             if (user != null && await _userManager.CheckPasswordAsync(user, login.Password))
             {
+                if (!user.EmailConfirmed)
+                {
+                    return StatusCode(StatusCodes.Status403Forbidden,
+                        new { Message = "Veuillez confirmer votre email avant de vous connecter." });
+                }
                 IList<string> roles = await _userManager.GetRolesAsync(user);
                 List<Claim> authClaims = new List<Claim>();
                 foreach (string role in roles)
