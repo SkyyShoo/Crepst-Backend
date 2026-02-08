@@ -107,6 +107,8 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddScoped<Backend.Services.Interfaces.IEmailService, Backend.Services.EmailService>();
+
 var app = builder.Build();
 
 // Configuration du pipeline HTTP
