@@ -79,6 +79,9 @@ namespace Backend.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime>("DateFinExtrait")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<List<int>>("ExtraitId")
                         .HasColumnType("integer[]");
 
@@ -114,6 +117,7 @@ namespace Backend.Migrations
                             Id = 1,
                             CommentsId = new List<int> { 1 },
                             Date = new DateTime(2024, 7, 15, 20, 0, 0, 0, DateTimeKind.Utc),
+                            DateFinExtrait = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Lieu = "Salle de Concert Paris",
                             Resumer = "Une soirée inoubliable avec les meilleurs musiciens de jazz.",
                             Thematique = "",
@@ -257,7 +261,7 @@ namespace Backend.Migrations
                         {
                             Id = "00000000-0000-0000-0000-000000000001",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "9f4145b1-fad1-4d42-bcae-831c87dcdb2d",
+                            ConcurrencyStamp = "906e176a-40c2-46bc-9f1b-a3a9692e058f",
                             Email = "seed@example.invalid",
                             EmailConfirmed = true,
                             LockoutEnabled = true,
@@ -265,7 +269,7 @@ namespace Backend.Migrations
                             NormalizedUserName = "PABLO",
                             PasswordHash = "REMOVED_PASSWORD_HASH",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "2febe562-450a-4530-89fa-d8f93a40b8e5",
+                            SecurityStamp = "83aea259-b2a7-4103-a4db-fdd6858a0d52",
                             TwoFactorEnabled = false,
                             UserName = "pablo"
                         },
@@ -273,7 +277,7 @@ namespace Backend.Migrations
                         {
                             Id = "00000000-0000-0000-0000-000000000002",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "2bf4c651-1bdd-4bbe-ae5e-e59c7065a432",
+                            ConcurrencyStamp = "c2d88127-a490-47ea-afa3-8ae5b14e19dd",
                             Email = "seed@example.invalid",
                             EmailConfirmed = true,
                             LockoutEnabled = true,
@@ -281,7 +285,7 @@ namespace Backend.Migrations
                             NormalizedUserName = "SAM",
                             PasswordHash = "REMOVED_PASSWORD_HASH",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "6b6b8161-4d18-4a81-ab07-c08b43fc986c",
+                            SecurityStamp = "6094047e-a62b-426c-8fb9-621dbd53a409",
                             TwoFactorEnabled = false,
                             UserName = "sam"
                         });

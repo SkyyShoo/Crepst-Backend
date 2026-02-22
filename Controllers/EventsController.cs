@@ -81,16 +81,20 @@ namespace Backend.Controllers
             try
             {
                 DateTime localDateTime = DateTime.SpecifyKind(@eventDTO.Date, DateTimeKind.Unspecified);
-            
+                DateTime localDateExtraitTime = DateTime.SpecifyKind(@eventDTO.DateFinExtrait, DateTimeKind.Unspecified);
+
                 TimeZoneInfo montrealTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Montreal");
             
                 DateTime utcDateTime = TimeZoneInfo.ConvertTimeToUtc(localDateTime, montrealTimeZone);
-                
+                DateTime utcDateExtaitTime = TimeZoneInfo.ConvertTimeToUtc(localDateExtraitTime, montrealTimeZone);
+
+
                 @event.Titre = @eventDTO.Title;
                 @event.Date = utcDateTime;
                 @event.Lieu = @eventDTO.Lieu;
                 @event.Thematique = @eventDTO.Thematique;
                 @event.Resumer = @eventDTO.Resumer;
+                @event.DateFinExtrait = utcDateExtaitTime;
 
                 _context.Events.Update(@event);
                 await _context.SaveChangesAsync();
@@ -111,11 +115,14 @@ namespace Backend.Controllers
                 return Unauthorized(new { Message = "L'utilisateur n'a pas accès à créer un événement" });
             }
             DateTime localDateTime = DateTime.SpecifyKind(@eventDTO.Date, DateTimeKind.Unspecified);
-            
+            DateTime localDateExtraitTime = DateTime.SpecifyKind(@eventDTO.DateFinExtrait, DateTimeKind.Unspecified);
+
+
             TimeZoneInfo montrealTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Montreal");
             
             DateTime utcDateTime = TimeZoneInfo.ConvertTimeToUtc(localDateTime, montrealTimeZone);
-            Event @event = new Event{Titre = @eventDTO.Title, Date = utcDateTime, Lieu = @eventDTO.Lieu, Resumer = @eventDTO.Resumer, Thematique = eventDTO.Thematique};
+            DateTime utcDateExtraitTime = TimeZoneInfo.ConvertTimeToUtc(localDateExtraitTime, montrealTimeZone);
+            Event @event = new Event{Titre = @eventDTO.Title, Date = utcDateTime, Lieu = @eventDTO.Lieu, Resumer = @eventDTO.Resumer, Thematique = eventDTO.Thematique, DateFinExtrait = utcDateExtraitTime };
             _context.Events.Add(@event);
             await _context.SaveChangesAsync();
 

@@ -112,29 +112,6 @@ namespace Backend.Controllers
             return File(fileBytes, "application/pdf", extrait.FileName);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutExtrait(int id, Extrait extrait)
-        {
-            if (id != extrait.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(extrait).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                
-             
-            }
-
-            return NoContent();
-        }
-
         [HttpPost]
         [Authorize]
         [DisableRequestSizeLimit]
@@ -180,6 +157,12 @@ namespace Backend.Controllers
                 if (!int.TryParse(form["EventId"].ToString(), out int eventId))
                 {
                     return BadRequest(new { Message = "EventId invalide" });
+                }
+
+                Event? @event = await _context.Events.FindAsync(eventId);
+                if (@event != null && @event.DateFinExtrait < DateTime.UtcNow && !User.IsInRole(BackendContext.ADMIN_ROLE) && !User.IsInRole(BackendContext.MODERATOR_ROLE))
+                {
+                    return BadRequest(new { Message = "Date limite dépasser" });
                 }
 
                 int? anneeParution = null;
@@ -230,6 +213,9 @@ namespace Backend.Controllers
                     User = user,
                     OwnerName = user.UserName
                 };
+
+
+
 
                 _context.Extraits.Add(nouvelExtrait);
                 await _context.SaveChangesAsync();
@@ -353,6 +339,12 @@ namespace Backend.Controllers
                 if (!isOwner && !isAdmin && !isModerator)
                 {
                     return Unauthorized(new {Message = "Vous n'avez pas les accès pour modifier cet extrait"});
+                }
+
+                if (!isAdmin && !isModerator && extrait.Event.DateFinExtrait < DateTime.UtcNow)
+                {
+                    return Unauthorized(new { Message = "Vous ne pouver pas modifier l'extrait après " + extrait.Event.DateFinExtrait });
+
                 }
 
                 var form = await Request.ReadFormAsync();
