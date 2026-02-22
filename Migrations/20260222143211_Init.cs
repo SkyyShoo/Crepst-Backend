@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Backend.Migrations
 {
     /// <inheritdoc />
-    public partial class initialcreate : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -34,6 +34,8 @@ namespace Backend.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
+                    EmailConfirmationToken = table.Column<string>(type: "text", nullable: true),
+                    EmailConfirmationTokenExpiry = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -62,9 +64,12 @@ namespace Backend.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Titre = table.Column<string>(type: "text", nullable: false),
                     Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    DateFinExtrait = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Resumer = table.Column<string>(type: "text", nullable: false),
                     Lieu = table.Column<string>(type: "text", nullable: false),
                     Thematique = table.Column<string>(type: "text", nullable: false),
+                    FileName = table.Column<string>(type: "text", nullable: true),
+                    MimeType = table.Column<string>(type: "text", nullable: true),
                     ExtraitId = table.Column<List<int>>(type: "integer[]", nullable: true),
                     CommentsId = table.Column<List<int>>(type: "integer[]", nullable: true)
                 },
@@ -186,7 +191,7 @@ namespace Backend.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Text = table.Column<string>(type: "text", nullable: false),
-                    Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     EventId = table.Column<int>(type: "integer", nullable: false),
                     UserId = table.Column<string>(type: "text", nullable: true)
                 },
@@ -238,6 +243,7 @@ namespace Backend.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Auteur = table.Column<string>(type: "text", nullable: false),
                     Titre = table.Column<string>(type: "text", nullable: false),
+                    Chapitre = table.Column<string>(type: "text", nullable: false),
                     Traduction = table.Column<string>(type: "text", nullable: false),
                     AnneeParution = table.Column<int>(type: "integer", nullable: true),
                     Edition = table.Column<string>(type: "text", nullable: false),
@@ -276,17 +282,17 @@ namespace Backend.Migrations
 
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
-                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
+                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmationToken", "EmailConfirmationTokenExpiry", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
                 values: new object[,]
                 {
-                    { "00000000-0000-0000-0000-000000000001", 0, "b7500180-b622-44e0-9f32-5043d8771698", "seed@example.invalid", true, true, null, "PABLO@ADMIN.COM", "PABLO", "REMOVED_PASSWORD_HASH", null, false, "32bc123e-1f2c-4381-94a8-6fc3aec4d3c6", false, "pablo" },
-                    { "00000000-0000-0000-0000-000000000002", 0, "1905f3f9-f44b-41e1-9f1e-580959e9339e", "seed@example.invalid", true, true, null, "SAM@ADMIN.COM", "SAM", "REMOVED_PASSWORD_HASH", null, false, "538d1890-9e03-480d-a377-5a4d036da25f", false, "sam" }
+                    { "00000000-0000-0000-0000-000000000001", 0, "906e176a-40c2-46bc-9f1b-a3a9692e058f", "seed@example.invalid", null, null, true, true, null, "PABLO@ADMIN.COM", "PABLO", "REMOVED_PASSWORD_HASH", null, false, "83aea259-b2a7-4103-a4db-fdd6858a0d52", false, "pablo" },
+                    { "00000000-0000-0000-0000-000000000002", 0, "c2d88127-a490-47ea-afa3-8ae5b14e19dd", "seed@example.invalid", null, null, true, true, null, "SAM@ADMIN.COM", "SAM", "REMOVED_PASSWORD_HASH", null, false, "6094047e-a62b-426c-8fb9-621dbd53a409", false, "sam" }
                 });
 
             migrationBuilder.InsertData(
                 table: "Events",
-                columns: new[] { "Id", "CommentsId", "Date", "ExtraitId", "Lieu", "Resumer", "Thematique", "Titre" },
-                values: new object[] { 1, new List<int> { 1 }, new DateTime(2024, 7, 15, 20, 0, 0, 0, DateTimeKind.Utc), null, "Salle de Concert Paris", "Une soirée inoubliable avec les meilleurs musiciens de jazz.", "", "Concert de Jazz" });
+                columns: new[] { "Id", "CommentsId", "Date", "DateFinExtrait", "ExtraitId", "FileName", "Lieu", "MimeType", "Resumer", "Thematique", "Titre" },
+                values: new object[] { 1, new List<int> { 1 }, new DateTime(2024, 7, 15, 20, 0, 0, 0, DateTimeKind.Utc), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, "Salle de Concert Paris", null, "Une soirée inoubliable avec les meilleurs musiciens de jazz.", "", "Concert de Jazz" });
 
             migrationBuilder.InsertData(
                 table: "AspNetUserRoles",
