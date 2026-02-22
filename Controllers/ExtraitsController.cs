@@ -160,7 +160,7 @@ namespace Backend.Controllers
                 }
 
                 Event? @event = await _context.Events.FindAsync(eventId);
-                if (@event != null && @event.DateFinExtrait < DateTime.UtcNow)
+                if (@event != null && @event.DateFinExtrait < DateTime.UtcNow && !User.IsInRole(BackendContext.ADMIN_ROLE) && !User.IsInRole(BackendContext.MODERATOR_ROLE))
                 {
                     return BadRequest(new { Message = "Date limite dépasser" });
                 }
