@@ -25,7 +25,7 @@ namespace Backend.Controllers
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
 
-        public UsersController(UserManager<User> userManager, BackendContext backendContext, 
+        public UsersController(UserManager<User> userManager, BackendContext backendContext,
             RoleManager<IdentityRole> roleManager, IEmailService emailService, IConfiguration configuration)
         {
             _userManager = userManager;
@@ -189,7 +189,7 @@ namespace Backend.Controllers
         public async Task<List<UserDTO>> GetAll()
         {
             // On utilise une requête LINQ pour projeter les données vers le DTO
-            var users = await _userManager.Users.Select(user => new UserDTO
+            var users = await _userManager.Users.Where(p => p.EmailConfirmed == true).Select(user => new UserDTO
             {
                 Id = user.Id,
                 UserName = user.UserName,
