@@ -108,6 +108,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<Backend.Services.Interfaces.IEmailService, Backend.Services.EmailService>();
+builder.Services.AddScoped<Backend.Services.Interfaces.IEventService, Backend.Services.EventService>();
 
 var app = builder.Build();
 
