@@ -1,6 +1,7 @@
 ﻿using Backend.Data;
 using Backend.Models;
 using Backend.Models.DTOs;
+using Backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -18,15 +19,15 @@ namespace Backend.Controllers
     [ApiController]
     public class EventsController : ControllerBase
     {
-        private readonly BackendContext _context;
         private readonly IWebHostEnvironment _env;
+        private readonly IEventService _eventService;
 
         private readonly string _pdfPath;
 
-        public EventsController(BackendContext context, UserManager<User> userManager, IWebHostEnvironment env)
+        public EventsController(UserManager<User> userManager, IWebHostEnvironment env, IEventService eventService)
         {
-            _context = context;
             _env = env;
+            _eventService = eventService;
 
             bool isAzure = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_INSTANCE_ID"));
             if (isAzure)
@@ -42,13 +43,13 @@ namespace Backend.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Event>>> GetEvents()
         {
-            return await _context.Events.OrderByDescending(p => p.Date).ToListAsync();
+            return Ok(await _eventService.GetEvents());
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Event>> GetEvent(int id)
         {
-            var @event = await _context.Events.FindAsync(id);
+            Event @event = await _eventService.Get(id);
 
             if (@event == null)
             {
@@ -61,14 +62,19 @@ namespace Backend.Controllers
         [HttpGet]
         public async Task<ActionResult<Event>> NextEvent()
         {
-            return await _context.Events.OrderBy(p=>p.Date).LastAsync();
+            Event @event = await _eventService.Next();
+
+            if (@event == null)
+                return NotFound();
+
+            return @event;
         }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> UpdateEvent(int id, EventDTO @eventDTO)
         {
-            var @event = await _context.Events.FindAsync(id);
+            Event @event = await _eventService.Get(id);
             if (@event == null)
             {
                 return NotFound(new { Message = "Event introuvable" });
@@ -80,24 +86,7 @@ namespace Backend.Controllers
             }
             try
             {
-                DateTime localDateTime = DateTime.SpecifyKind(@eventDTO.Date, DateTimeKind.Unspecified);
-                DateTime localDateExtraitTime = DateTime.SpecifyKind(@eventDTO.DateFinExtrait, DateTimeKind.Unspecified);
-
-                TimeZoneInfo montrealTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Montreal");
-            
-                DateTime utcDateTime = TimeZoneInfo.ConvertTimeToUtc(localDateTime, montrealTimeZone);
-                DateTime utcDateExtaitTime = TimeZoneInfo.ConvertTimeToUtc(localDateExtraitTime, montrealTimeZone);
-
-
-                @event.Titre = @eventDTO.Title;
-                @event.Date = utcDateTime;
-                @event.Lieu = @eventDTO.Lieu;
-                @event.Thematique = @eventDTO.Thematique;
-                @event.Resumer = @eventDTO.Resumer;
-                @event.DateFinExtrait = utcDateExtaitTime;
-
-                _context.Events.Update(@event);
-                await _context.SaveChangesAsync();
+                await _eventService.Update(@event, @eventDTO);
                 return Ok(new {Message = "Event modifié avec succès"});
             }
             catch
@@ -114,18 +103,8 @@ namespace Backend.Controllers
             {
                 return Unauthorized(new { Message = "L'utilisateur n'a pas accès à créer un événement" });
             }
-            DateTime localDateTime = DateTime.SpecifyKind(@eventDTO.Date, DateTimeKind.Unspecified);
-            DateTime localDateExtraitTime = DateTime.SpecifyKind(@eventDTO.DateFinExtrait, DateTimeKind.Unspecified);
 
-
-            TimeZoneInfo montrealTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Montreal");
-            
-            DateTime utcDateTime = TimeZoneInfo.ConvertTimeToUtc(localDateTime, montrealTimeZone);
-            DateTime utcDateExtraitTime = TimeZoneInfo.ConvertTimeToUtc(localDateExtraitTime, montrealTimeZone);
-            Event @event = new Event{Titre = @eventDTO.Title, Date = utcDateTime, Lieu = @eventDTO.Lieu, Resumer = @eventDTO.Resumer, Thematique = eventDTO.Thematique, DateFinExtrait = utcDateExtraitTime };
-            _context.Events.Add(@event);
-            await _context.SaveChangesAsync();
-
+            await _eventService.Create(@eventDTO);
             return Ok(new {message = "Event ajouté !"});
         }
 
@@ -139,55 +118,38 @@ namespace Backend.Controllers
                 return Unauthorized(new { Message = "L'utilisateur n'a pas accès à supprimer un événement" });
             }
 
-            var @event = await _context.Events.FindAsync(id);
-            if (@event == null)
-            {
-                return NotFound(new {Message = "Événement introuvable"});
-            }
+            Event? deletedEvent = await _eventService.Delete(id);
 
-            if (!string.IsNullOrEmpty(@event.FileName))
+            if (deletedEvent == null)
+                return NotFound(new { Message = "Événement introuvable" });
+
+            // Supprimer le PDF de l'événement
+            if (!string.IsNullOrEmpty(deletedEvent.FileName))
             {
-                var resumePath = Path.Combine(_pdfPath, @event.FileName);
+                var resumePath = Path.Combine(_pdfPath, deletedEvent.FileName);
                 if (System.IO.File.Exists(resumePath))
                 {
-                    try
-                    {
-                        System.IO.File.Delete(resumePath);
-                    }
-                    catch (Exception ex)
-                    {
-                    }
+                    try { System.IO.File.Delete(resumePath); }
+                    catch { }
                 }
             }
 
-            var extraits = await _context.Extraits.Where(p => p.EventId == id).ToListAsync();
-            foreach(var extrait in extraits)
+            // Supprimer les fichiers des extraits
+            if (deletedEvent.Extraits?.Any() == true)
             {
-                if (!string.IsNullOrEmpty(extrait.FileName))
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                foreach (var extrait in deletedEvent.Extraits)
                 {
-                    string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                    if (string.IsNullOrEmpty(extrait.FileName)) continue;
+
                     var filePath = Path.Combine(uploadsFolder, extrait.FileName);
                     if (System.IO.File.Exists(filePath))
                     {
-                        try
-                        {
-                            System.IO.File.Delete(filePath);
-                        }
-                        catch(Exception ex)
-                        {
-                            return BadRequest(new { Message = $"Erreur lors de la suppression du fichier {filePath}: {ex.Message}" });
-                        }
+                        try { System.IO.File.Delete(filePath); }
+                        catch { }
                     }
                 }
             }
-            _context.Extraits.RemoveRange(extraits);
-
-            List<Comment> comments = await _context.Comments.Where(p => p.EventId == id).ToListAsync();
-            _context.Comments.RemoveRange(comments);
-
-            _context.Events.Remove(@event);
-
-            await _context.SaveChangesAsync();
 
             return NoContent();
         }
@@ -205,7 +167,7 @@ namespace Backend.Controllers
                 }
 
                 // Récupérer l'événement
-                var @event = await _context.Events.FindAsync(id);
+                Event? @event = await _eventService.Get(id);
                 if (@event == null)
                 {
                     return NotFound(new { Message = "Événement introuvable" });
@@ -258,11 +220,7 @@ namespace Backend.Controllers
                 }
 
                 // Mettre à jour l'événement
-                @event.FileName = fileName;
-                @event.MimeType = "application/pdf";
-
-                _context.Entry(@event).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
+                await _eventService.UpdateResumeFile(id, fileName, "application/pdf");
 
                 return Ok(new
                 {
@@ -287,7 +245,7 @@ namespace Backend.Controllers
         {
             try
             {
-                var @event = await _context.Events.FindAsync(id);
+                var @event = await _eventService.Get(id);
 
                 if (@event == null)
                 {
@@ -326,7 +284,7 @@ namespace Backend.Controllers
                     return Unauthorized(new { Message = "Seuls les administrateurs peuvent supprimer un résumé" });
                 }
 
-                var @event = await _context.Events.FindAsync(id);
+                var @event = await _eventService.Get(id);
 
                 if (@event == null)
                 {
@@ -346,11 +304,7 @@ namespace Backend.Controllers
                 }
 
                 // Mettre à jour l'événement
-                @event.FileName = null;
-                @event.MimeType = null;
-
-                _context.Entry(@event).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
+                await _eventService.UpdateResumeFile(id, null, null);
 
                 return Ok(new { Message = "Résumé supprimé avec succès" });
             }
@@ -358,11 +312,6 @@ namespace Backend.Controllers
             {
                 return StatusCode(500, new { Message = "Erreur lors de la suppression du résumé" });
             }
-        }
-
-        private bool EventExists(int id)
-        {
-            return _context.Events.Any(e => e.Id == id);
         }
     }
 }
