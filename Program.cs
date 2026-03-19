@@ -71,7 +71,12 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular",
         policy => policy
-            .WithOrigins("http://localhost:4200")
+            .WithOrigins(
+                "http://localhost:4200",
+                "https://crepst.vercel.app",
+                "https://www.crepst.com",
+                "https://crepst.com"
+            )
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials()
@@ -121,13 +126,11 @@ if (app.Environment.IsDevelopment())
 // Activation de la localisation
 app.UseRequestLocalization();
 
-// CORS DOIT ÊTRE AVANT Authentication
-app.UseCors("AllowAngular");
-
 app.UseHttpsRedirection();
 
 // Servir les fichiers statiques (pour les PDFs uploadés)
 app.UseStaticFiles();
+app.UseCors("AllowAngular");
 
 app.UseAuthentication();
 app.UseAuthorization();
