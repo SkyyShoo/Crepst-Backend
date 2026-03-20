@@ -75,8 +75,8 @@ builder.Services.AddCors(options =>
                 "http://localhost:4200",
                 "https://crepst.vercel.app",
                 "https://www.crepst.com",
-                "https://crepst.com"
-            )
+                "https://crepst.com",
+                "https://dev.crepst.com")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials()
