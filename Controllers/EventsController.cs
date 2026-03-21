@@ -29,14 +29,13 @@ namespace Backend.Controllers
             _env = env;
             _eventService = eventService;
 
-            bool isAzure = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_INSTANCE_ID"));
-            if (isAzure)
+            if (env.IsDevelopment())
             {
                 _pdfPath = "/home/data/pdfsEvent";
             }
             else
             {
-                _pdfPath = Path.Combine(env.ContentRootPath, "Assets", "PDF_Event");
+                _pdfPath = "/var/www/crepst-storage/pdfsEvent";
             }
         }
 

@@ -29,14 +29,13 @@ namespace Backend.Controllers
             _userManager = userManager;
             _env = env;
 
-            bool isAzure = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_INSTANCE_ID"));
-            if (isAzure)
+            if (!env.IsDevelopment())
             {
                 _pdfPath = "/home/data/pdfs";
             }
             else
             {
-                _pdfPath = Path.Combine(env.ContentRootPath, "Assets", "PDF_Extrait");
+                _pdfPath = "/var/www/crepst-storage/pdfs";
             }
         }
 
