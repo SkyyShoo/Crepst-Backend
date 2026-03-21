@@ -57,15 +57,6 @@ jobs:
           source: "."
           target: "/var/www/crepst-api/current"
 
-      - name: Fix permissions
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            chown -R www-data:www-data /var/www/crepst-api
-
       - name: Restart app
         uses: appleboy/ssh-action@v1
         with:
