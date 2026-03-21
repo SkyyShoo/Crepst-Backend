@@ -29,9 +29,9 @@ namespace Backend.Controllers
             _userManager = userManager;
             _env = env;
 
-            if (!env.IsDevelopment())
+            if (env.IsDevelopment())
             {
-                _pdfPath = "/home/data/pdfs";
+                _pdfPath = Path.Combine(env.ContentRootPath, "Assets", "PDF_Event");
             }
             else
             {

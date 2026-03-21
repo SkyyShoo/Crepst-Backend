@@ -31,7 +31,7 @@ namespace Backend.Controllers
 
             if (env.IsDevelopment())
             {
-                _pdfPath = "/home/data/pdfsEvent";
+                _pdfPath = Path.Combine(env.ContentRootPath, "Assets", "PDF_Event");
             }
             else
             {
