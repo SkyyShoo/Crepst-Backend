@@ -64,4 +64,4 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            sudo systemctl restart crepst
+            sudo systemctl restart crepst-api
