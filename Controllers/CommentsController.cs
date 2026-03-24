@@ -24,7 +24,7 @@ namespace Backend.Controllers
 
         private readonly UserManager<User> _userManager;
 
-        public CommentsController(BackendContext context , UserManager<User> userManager)
+        public CommentsController(BackendContext context, UserManager<User> userManager)
         {
             _context = context;
             _userManager = userManager;
@@ -53,19 +53,19 @@ namespace Backend.Controllers
                 return NotFound();
             }
             List<CommentDTO> commentDTOs = new List<CommentDTO>();
-                foreach (Comment comment in comments)
+            foreach (Comment comment in comments)
+            {
+                CommentDTO commentDTO = new()
                 {
-                        CommentDTO commentDTO = new()
-                        {
-                            Text = comment.Text,
-                            Id = comment.Id,
-                            Date = DateTime.SpecifyKind(comment.Date, DateTimeKind.Utc),
-                            Author = comment.User?.UserName ?? "Anonyme",
-                            EventId = id
-                        };
-                        commentDTOs.Add(commentDTO);
-                    
-                }
+                    Id = comment.Id,
+                    Text = comment.Text,
+                    Date = DateTime.SpecifyKind(comment.Date, DateTimeKind.Utc),
+                    Author = comment.User?.UserName ?? "Anonyme",
+                    EventId = id
+                };
+                commentDTOs.Add(commentDTO);
+
+            }
 
             return commentDTOs;
         }
@@ -106,12 +106,11 @@ namespace Backend.Controllers
         [Authorize]
         public async Task<ActionResult<Comment>> PostComment(CommentDTO commentDTO)
         {
-            User? user = await _userManager.FindByNameAsync(commentDTO.Author);
+            User? user = await _userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            if (user == null) return NotFound("Utilisateur introuvable");
 
-            if (commentDTO.Date != null)
-            {
-                commentDTO.Date = DateTime.UtcNow;
-            }
+            commentDTO.Date = DateTime.UtcNow;
+
             Comment comment = new Comment
             {
                 Text = commentDTO.Text,
@@ -130,7 +129,7 @@ namespace Backend.Controllers
         public async Task<IActionResult> DeleteComment(int id)
         {
             User? user = await _userManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            if(user == null) return NotFound("Utilisateur introuvable");
+            if (user == null) return NotFound("Utilisateur introuvable");
 
             var comment = await _context.Comments.FindAsync(id);
             if (comment == null) return NotFound("Commentaire introuvable");
@@ -141,7 +140,7 @@ namespace Backend.Controllers
             {
                 _context.Comments.Remove(comment);
                 await _context.SaveChangesAsync();
-                return Ok(new {Message = "Commentaire supprimé avec succès"});
+                return Ok(new { Message = "Commentaire supprimé avec succès" });
             }
             return Unauthorized("Impossible de supprimer un commentaire qui ne vous appartient pas");
         }

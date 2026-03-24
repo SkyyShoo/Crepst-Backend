@@ -78,7 +78,7 @@ namespace Backend.Controllers
             {
                 return NotFound(new { Message = "Event introuvable" });
             }
-            
+
             if (!User.IsInRole("admin"))
             {
                 return Unauthorized(new { Message = "L'utilisateur n'a pas accès à modifier un événement" });
@@ -86,7 +86,7 @@ namespace Backend.Controllers
             try
             {
                 await _eventService.Update(@event, @eventDTO);
-                return Ok(new {Message = "Event modifié avec succès"});
+                return Ok(new { Message = "Event modifié avec succès" });
             }
             catch
             {
@@ -104,7 +104,7 @@ namespace Backend.Controllers
             }
 
             await _eventService.Create(@eventDTO);
-            return Ok(new {message = "Event ajouté !"});
+            return Ok(new { message = "Event ajouté !" });
         }
 
         [HttpDelete("{id}")]
@@ -231,9 +231,7 @@ namespace Backend.Controllers
             {
                 return StatusCode(500, new
                 {
-                    Message = "Erreur lors de l'upload du résumé",
-                    Details = ex.Message,
-                    InnerException = ex.InnerException?.Message
+                    Message = "Erreur lors de l'upload du résumé."
                 });
             }
         }

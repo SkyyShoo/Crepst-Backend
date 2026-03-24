@@ -258,40 +258,6 @@ namespace Backend.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "00000000-0000-0000-0000-000000000001",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "906e176a-40c2-46bc-9f1b-a3a9692e058f",
-                            Email = "seed@example.invalid",
-                            EmailConfirmed = true,
-                            LockoutEnabled = true,
-                            NormalizedEmail = "PABLO@ADMIN.COM",
-                            NormalizedUserName = "PABLO",
-                            PasswordHash = "REMOVED_PASSWORD_HASH",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "83aea259-b2a7-4103-a4db-fdd6858a0d52",
-                            TwoFactorEnabled = false,
-                            UserName = "pablo"
-                        },
-                        new
-                        {
-                            Id = "00000000-0000-0000-0000-000000000002",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "c2d88127-a490-47ea-afa3-8ae5b14e19dd",
-                            Email = "seed@example.invalid",
-                            EmailConfirmed = true,
-                            LockoutEnabled = true,
-                            NormalizedEmail = "SAM@ADMIN.COM",
-                            NormalizedUserName = "SAM",
-                            PasswordHash = "REMOVED_PASSWORD_HASH",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "6094047e-a62b-426c-8fb9-621dbd53a409",
-                            TwoFactorEnabled = false,
-                            UserName = "sam"
-                        });
                 });
 
             modelBuilder.Entity("EventUser", b =>
@@ -440,18 +406,6 @@ namespace Backend.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            UserId = "00000000-0000-0000-0000-000000000001",
-                            RoleId = "1"
-                        },
-                        new
-                        {
-                            UserId = "00000000-0000-0000-0000-000000000002",
-                            RoleId = "1"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>

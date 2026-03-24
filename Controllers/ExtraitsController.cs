@@ -20,14 +20,16 @@ namespace Backend.Controllers
         private readonly BackendContext _context;
         private readonly UserManager<User> _userManager;
         private readonly IWebHostEnvironment _env;
+        private readonly ILogger<ExtraitsController> _logger;
 
         private readonly string _pdfPath;
 
-        public ExtraitsController(BackendContext context, UserManager<User> userManager, IWebHostEnvironment env)
+        public ExtraitsController(BackendContext context, UserManager<User> userManager, IWebHostEnvironment env, ILogger<ExtraitsController> logger)
         {
             _context = context;
             _userManager = userManager;
             _env = env;
+            _logger = logger;
 
             if (env.IsDevelopment())
             {
@@ -89,22 +91,16 @@ namespace Backend.Controllers
 
             if (extrait == null)
             {
-                Console.WriteLine($"Extrait {id} non trouvé");
                 return NotFound(new { Message = "Extrait non trouvé" });
             }
 
 
             var filePath = Path.Combine(_pdfPath, extrait.FileName);
 
-            Console.WriteLine($"Recherche du fichier: {filePath}");
-
             if (!System.IO.File.Exists(filePath))
             {
-                Console.WriteLine($"Fichier non trouvé: {filePath}");
                 return NotFound(new { Message = $"Fichier PDF non trouvé: {extrait.FileName}" });
             }
-
-            Console.WriteLine($"Fichier trouvé, taille: {new FileInfo(filePath).Length} bytes");
 
             // Lire et retourner le fichier
             var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
@@ -128,16 +124,12 @@ namespace Backend.Controllers
                 // Lire le formulaire manuellement
                 var form = await Request.ReadFormAsync();
 
-                Console.WriteLine($"Formulaire reçu avec {form.Files.Count} fichier(s)");
-
                 // Récupérer le fichier
                 var file = form.Files.GetFile("file");
                 if (file == null || file.Length == 0)
                 {
                     return BadRequest(new { Message = "Aucun fichier reçu" });
                 }
-
-                Console.WriteLine($"Fichier: {file.FileName}, Taille: {file.Length} bytes");
 
                 // Vérifier le type
                 if (file.ContentType != "application/pdf")
@@ -173,28 +165,21 @@ namespace Backend.Controllers
                     }
                 }
 
-                Console.WriteLine($"Données: Auteur={auteur}, Titre={titre}, EventId={eventId}");
-
                 // Créer le dossier uploads
                 string uploadsFolder = _pdfPath;
                 if (!Directory.Exists(uploadsFolder))
                 {
                     Directory.CreateDirectory(uploadsFolder);
-                    Console.WriteLine("Dossier uploads créé");
                 }
 
                 // Sauvegarder le fichier
                 var fileName = Guid.NewGuid().ToString() + ".pdf";
                 var filePath = Path.Combine(uploadsFolder, fileName);
 
-                Console.WriteLine($"Sauvegarde du fichier: {filePath}");
-
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await file.CopyToAsync(stream);
                 }
-
-                Console.WriteLine("Fichier sauvegardé avec succès");
 
                 // Créer l'entité
                 var nouvelExtrait = new Extrait
@@ -223,18 +208,14 @@ namespace Backend.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Message: {ex.Message}");
-                Console.WriteLine($"StackTrace: {ex.StackTrace}");
                 if (ex.InnerException != null)
                 {
-                    Console.WriteLine($"InnerException: {ex.InnerException.Message}");
+                    _logger.LogError(ex.InnerException, "InnerException lors de l'upload d'extrait");
                 }
 
                 return StatusCode(500, new
                 {
-                    Message = "Erreur lors de l'upload",
-                    Details = ex.Message,
-                    InnerException = ex.InnerException?.Message
+                    Message = "Erreur lors de l'upload."
                 });
             }
         }
@@ -281,14 +262,12 @@ namespace Backend.Controllers
                         }
                         catch (Exception ioEx)
                         {
-                            // On log l'erreur mais on ne bloque pas la suppression en BDD 
-                            // (sinon on se retrouve avec un enregistrement impossible à supprimer)
-                            Console.WriteLine($"Erreur suppression fichier physique: {ioEx.Message}");
+                            _logger.LogWarning("Erreur suppression fichier physique: {ioEx.Message}", ioEx.Message);
                         }
                     }
                     else
                     {
-                        Console.WriteLine("Le fichier physique n'existait pas (déjà supprimé ?)");
+                        _logger.LogWarning("Le fichier physique n'existait pas pour l'extrait ID {ExtraitId}", id);
                     }
                 }
 
@@ -303,8 +282,7 @@ namespace Backend.Controllers
             {
                 return StatusCode(500, new
                 {
-                    Message = "Erreur lors de la suppression",
-                    Details = ex.Message
+                    Message = "Erreur lors de la suppression."
                 });
             }
         }
@@ -337,7 +315,7 @@ namespace Backend.Controllers
 
                 if (!isOwner && !isAdmin && !isModerator)
                 {
-                    return Unauthorized(new {Message = "Vous n'avez pas les accès pour modifier cet extrait"});
+                    return Unauthorized(new { Message = "Vous n'avez pas les accès pour modifier cet extrait" });
                 }
 
                 if (!isAdmin && !isModerator && extrait.Event.DateFinExtrait < DateTime.UtcNow)
@@ -432,9 +410,7 @@ namespace Backend.Controllers
             {
                 return StatusCode(500, new
                 {
-                    Message = "Erreur lors de la modification",
-                    Details = ex.Message,
-                    InnerException = ex.InnerException?.Message
+                    Message = "Erreur lors de la modification."
                 });
             }
         }
