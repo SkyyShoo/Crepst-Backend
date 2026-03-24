@@ -221,12 +221,9 @@ namespace Backend.Controllers
         {
             // Vérification que l'utilisateur est bien un administrateur
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(currentUserId)) return Unauthorized();
             var currentUser = await _userManager.FindByIdAsync(currentUserId);
-
-            if (!await _userManager.IsInRoleAsync(currentUser, "Admin"))
-            {
-                return Forbid();
-            }
+            if (currentUser == null) return Unauthorized("Utilisateur introuvable");
 
             User? user = await _context.Users.FindAsync(addRoleDTO.UserId);
             if (user == null) return BadRequest("Utilisateur introuvable");
