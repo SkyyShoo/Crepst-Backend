@@ -71,30 +71,12 @@ namespace Backend.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.InsertData(
-                table: "AspNetUsers",
-                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmationToken", "EmailConfirmationTokenExpiry", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
-                values: new object[,]
-                {
-                    { "00000000-0000-0000-0000-000000000001", 0, "906e176a-40c2-46bc-9f1b-a3a9692e058f", "seed@example.invalid", null, null, true, true, null, "PABLO@ADMIN.COM", "PABLO", "REMOVED_PASSWORD_HASH", null, false, "83aea259-b2a7-4103-a4db-fdd6858a0d52", false, "pablo" },
-                    { "00000000-0000-0000-0000-000000000002", 0, "c2d88127-a490-47ea-afa3-8ae5b14e19dd", "seed@example.invalid", null, null, true, true, null, "SAM@ADMIN.COM", "SAM", "REMOVED_PASSWORD_HASH", null, false, "6094047e-a62b-426c-8fb9-621dbd53a409", false, "sam" }
-                });
-
             migrationBuilder.UpdateData(
                 table: "Events",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "CommentsId",
                 value: new List<int> { 1 });
-
-            migrationBuilder.InsertData(
-                table: "AspNetUserRoles",
-                columns: new[] { "RoleId", "UserId" },
-                values: new object[,]
-                {
-                    { "1", "00000000-0000-0000-0000-000000000001" },
-                    { "1", "00000000-0000-0000-0000-000000000002" }
-                });
         }
     }
 }

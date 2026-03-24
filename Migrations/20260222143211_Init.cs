@@ -271,37 +271,9 @@ namespace Backend.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "AspNetRoles",
-                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
-                values: new object[,]
-                {
-                    { "1", null, "admin", "ADMIN" },
-                    { "2", null, "moderator", "MODERATOR" },
-                    { "3", null, "utilisateur", "UTILISATEUR" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "AspNetUsers",
-                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmationToken", "EmailConfirmationTokenExpiry", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
-                values: new object[,]
-                {
-                    { "00000000-0000-0000-0000-000000000001", 0, "906e176a-40c2-46bc-9f1b-a3a9692e058f", "seed@example.invalid", null, null, true, true, null, "PABLO@ADMIN.COM", "PABLO", "REMOVED_PASSWORD_HASH", null, false, "83aea259-b2a7-4103-a4db-fdd6858a0d52", false, "pablo" },
-                    { "00000000-0000-0000-0000-000000000002", 0, "c2d88127-a490-47ea-afa3-8ae5b14e19dd", "seed@example.invalid", null, null, true, true, null, "SAM@ADMIN.COM", "SAM", "REMOVED_PASSWORD_HASH", null, false, "6094047e-a62b-426c-8fb9-621dbd53a409", false, "sam" }
-                });
-
-            migrationBuilder.InsertData(
                 table: "Events",
                 columns: new[] { "Id", "CommentsId", "Date", "DateFinExtrait", "ExtraitId", "FileName", "Lieu", "MimeType", "Resumer", "Thematique", "Titre" },
                 values: new object[] { 1, new List<int> { 1 }, new DateTime(2024, 7, 15, 20, 0, 0, 0, DateTimeKind.Utc), new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, "Salle de Concert Paris", null, "Une soirée inoubliable avec les meilleurs musiciens de jazz.", "", "Concert de Jazz" });
-
-            migrationBuilder.InsertData(
-                table: "AspNetUserRoles",
-                columns: new[] { "RoleId", "UserId" },
-                values: new object[,]
-                {
-                    { "1", "00000000-0000-0000-0000-000000000001" },
-                    { "1", "00000000-0000-0000-0000-000000000002" }
-                });
 
             migrationBuilder.InsertData(
                 table: "Comments",
