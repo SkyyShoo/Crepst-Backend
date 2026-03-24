@@ -9,7 +9,7 @@ namespace Backend.Services.Interfaces
         /// Cette méthode retourne la liste des cercles de lecture (events) à venir en ordre croissant de date.
         /// </summary>
         /// <returns>Retourne une liste de cercles de lecture (events) en ordre croissant de date</returns>
-        public Task<IEnumerable<Event>> GetEvents();
+        public Task<IEnumerable<EventDTO>> GetEvents();
 
         /// <summary>
         /// Cette méthode returne un cercle de lecture (event) correspondant au id envoyer dans les paramètres
@@ -22,7 +22,7 @@ namespace Backend.Services.Interfaces
         /// Cette méthode retourne le prochain cercle de lecture (event) à venir.
         /// </summary>
         /// <returns>Retourne le prochain cercle de lecture (event)</returns>
-        public Task<Event?> Next();
+        public Task<EventDTO?> Next();
 
         /// <summary>
         /// Cette méthode modifie le cercle de lecture (event) à venir en fonction des paramètres envoyer et retourne le cercle de lecture (event) modifié.

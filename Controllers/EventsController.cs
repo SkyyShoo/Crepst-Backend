@@ -40,7 +40,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Event>>> GetEvents()
+        public async Task<ActionResult<IEnumerable<EventDTO>>> GetEvents()
         {
             return Ok(await _eventService.GetEvents());
         }
@@ -59,9 +59,9 @@ namespace Backend.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<Event>> NextEvent()
+        public async Task<ActionResult<EventDTO>> NextEvent()
         {
-            Event @event = await _eventService.Next();
+            EventDTO? @event = await _eventService.Next();
 
             if (@event == null)
                 return NotFound();
@@ -73,7 +73,7 @@ namespace Backend.Controllers
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> UpdateEvent(int id, EventDTO @eventDTO)
         {
-            Event @event = await _eventService.Get(id);
+            Event? @event = await _eventService.Get(id);
             if (@event == null)
             {
                 return NotFound(new { Message = "Event introuvable" });

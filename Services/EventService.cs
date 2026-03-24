@@ -15,19 +15,47 @@ namespace Backend.Services
             _context = db;
         }
 
-        public async Task<IEnumerable<Event>> GetEvents()
+        public async Task<IEnumerable<EventDTO>> GetEvents()
         {
-            return await _context.Events.OrderByDescending(p => p.Date).ToListAsync();
+            return await _context.Events.AsNoTracking().OrderByDescending(p => p.Date)
+                                                       .Select(e => new EventDTO
+                                                       {
+                                                           Id = e.Id,
+                                                           Titre = e.Titre,
+                                                           Lieu = e.Lieu,
+                                                           Date = e.Date,
+                                                           Thematique = e.Thematique,
+                                                           Resumer = e.Resumer,
+                                                           DateFinExtrait = e.DateFinExtrait
+                                                       }).ToListAsync();
         }
 
         public async Task<Event?> Get(int eventId)
         {
             return await _context.Events.FirstOrDefaultAsync(e => e.Id == eventId);
         }
-
-        public async Task<Event?> Next()
+        public async Task<EventDTO?> Next()
         {
-            return await _context.Events.OrderBy(p => p.Date).LastOrDefaultAsync();
+            TimeZoneInfo montrealTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Montreal");
+            DateTime utcStartOfToday = TimeZoneInfo.ConvertTimeToUtc(
+                DateTime.SpecifyKind(DateTime.Today, DateTimeKind.Unspecified),
+                montrealTimeZone);
+
+            return await _context.Events
+                .AsNoTracking()
+                .Where(e => e.Date >= utcStartOfToday)
+                .OrderBy(e => e.Date)
+                .Select(e => new EventDTO
+                {
+                    Id = e.Id,
+                    Titre = e.Titre,
+                    Lieu = e.Lieu,
+                    Date = e.Date,
+                    Thematique = e.Thematique,
+                    Resumer = e.Resumer,
+                    DateFinExtrait = e.DateFinExtrait
+                })
+                .FirstOrDefaultAsync();
         }
 
         public async Task<Event?> Update(Event @event, EventDTO @eventDTO)
@@ -41,7 +69,7 @@ namespace Backend.Services
             DateTime utcDateExtaitTime = TimeZoneInfo.ConvertTimeToUtc(localDateExtraitTime, montrealTimeZone);
 
 
-            @event.Titre = @eventDTO.Title;
+            @event.Titre = @eventDTO.Titre;
             @event.Date = utcDateTime;
             @event.Lieu = @eventDTO.Lieu;
             @event.Thematique = @eventDTO.Thematique;
@@ -64,7 +92,7 @@ namespace Backend.Services
             DateTime utcDateTime = TimeZoneInfo.ConvertTimeToUtc(localDateTime, montrealTimeZone);
             DateTime utcDateExtraitTime = TimeZoneInfo.ConvertTimeToUtc(localDateExtraitTime, montrealTimeZone);
 
-            Event @event = new Event { Titre = @eventDTO.Title, Date = utcDateTime, Lieu = @eventDTO.Lieu, Resumer = @eventDTO.Resumer, Thematique = eventDTO.Thematique, DateFinExtrait = utcDateExtraitTime };
+            Event @event = new Event { Titre = @eventDTO.Titre, Date = utcDateTime, Lieu = @eventDTO.Lieu, Resumer = @eventDTO.Resumer, Thematique = eventDTO.Thematique, DateFinExtrait = utcDateExtraitTime };
 
             _context.Events.Add(@event);
             await _context.SaveChangesAsync();
