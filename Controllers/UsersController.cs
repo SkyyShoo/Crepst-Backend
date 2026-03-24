@@ -193,6 +193,7 @@ namespace Backend.Controllers
             }
         }
         [HttpGet]
+        [Authorize(Roles = "admin,moderator")]
         public async Task<List<UserDTO>> GetAll()
         {
             // On utilise une requête LINQ pour projeter les données vers le DTO
