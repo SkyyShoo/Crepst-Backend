@@ -45,6 +45,12 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequireNonAlphanumeric = false;
 });
 
+var jwtKey = builder.Configuration["Jwt:Key"]
+    ?? throw new InvalidOperationException("Jwt:Key manquant.");
+var jwtIssuer = builder.Configuration["Jwt:Issuer"]
+    ?? throw new InvalidOperationException("Jwt:Issuer manquant.");
+var jwtAudience = builder.Configuration["Jwt:Audience"]
+    ?? throw new InvalidOperationException("Jwt:Audience manquant.");
 // Configuration de l'authentification JWT
 builder.Services.AddAuthentication(options =>
 {
@@ -54,15 +60,18 @@ builder.Services.AddAuthentication(options =>
 }).AddJwtBearer(options =>
 {
     options.SaveToken = true;
-    options.RequireHttpsMetadata = false;
+    options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
     options.TokenValidationParameters = new TokenValidationParameters()
     {
+        ValidateIssuerSigningKey = true,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.FromMinutes(1),
         ValidateAudience = true,
         ValidateIssuer = true,
-        ValidAudience = "http://localhost:4200",
-        ValidIssuer = "https://localhost:7272",
+        ValidAudience = jwtAudience,
+        ValidIssuer = jwtIssuer,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8
-            .GetBytes("REMOVED_JWT_KEY"))
+            .GetBytes(jwtKey))
     };
 });
 

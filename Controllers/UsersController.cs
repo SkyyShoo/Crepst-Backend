@@ -161,11 +161,18 @@ namespace Backend.Controllers
                 }
                 authClaims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id));
 
+                var jwtKey = _configuration["Jwt:Key"]
+                    ?? throw new InvalidOperationException("Jwt:Key manquant.");
+                var jwtIssuer = _configuration["Jwt:Issuer"]
+                    ?? throw new InvalidOperationException("Jwt:Issuer manquant.");
+                var jwtAudience = _configuration["Jwt:Audience"]
+                    ?? throw new InvalidOperationException("Jwt:Audience manquant.");
+
                 SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8
-                    .GetBytes("REMOVED_JWT_KEY"));
+                    .GetBytes(jwtKey));
                 JwtSecurityToken token = new JwtSecurityToken(
-                    issuer: "https://localhost:7272",
-                    audience: "http://localhost:4200",
+                    issuer: jwtIssuer,
+                    audience: jwtAudience,
                     claims: authClaims,
                     expires: DateTime.Now.AddMinutes(30),
                     signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature)
