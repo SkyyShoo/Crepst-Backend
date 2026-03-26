@@ -64,10 +64,7 @@ namespace Backend.Controllers
         {
             EventDTO? @event = await _eventService.Next();
 
-            if (@event == null)
-                return NotFound();
-
-            return @event;
+            return Ok(@event);
         }
 
         [HttpPut("{id}")]
