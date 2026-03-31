@@ -225,7 +225,7 @@ namespace Backend.Controllers
             var currentUser = await _userManager.FindByIdAsync(currentUserId);
             if (currentUser == null) return Unauthorized("Utilisateur introuvable");
 
-            User? user = await _userManager.FindByIdAsync(addRoleDTO.UserId);
+            User? user = await _context.Users.FindAsync(addRoleDTO.UserId);
             if (user == null) return BadRequest("Utilisateur introuvable");
             if (user == currentUser) return BadRequest("Un utilisateur ne peut pas modifier ou retirer son propre rôle");
 
