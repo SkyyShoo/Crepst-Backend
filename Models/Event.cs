@@ -16,7 +16,7 @@ namespace Backend.Models
         public List<int>? ExtraitId { get; set; } = null!;
         public List<int>? CommentsId { get; set; } = null!;
         [ValidateNever]
-        public virtual List<User>? Participants { get; set; } = null!; 
+        public virtual List<User>? Participants { get; set; } = null!;
         [ValidateNever]
         public virtual List<Extrait> Extraits { get; set; } = null!;
         [ValidateNever]

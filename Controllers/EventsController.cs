@@ -49,7 +49,7 @@ namespace Backend.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Event>> GetEvent(int id)
         {
-            Event @event = await _eventService.Get(id);
+            Event? @event = await _eventService.Get(id);
 
             if (@event == null)
             {

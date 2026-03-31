@@ -32,7 +32,7 @@ namespace Backend.Services
 
         public async Task<Event?> Get(int eventId)
         {
-            return await _context.Events.FirstOrDefaultAsync(e => e.Id == eventId);
+            return await _context.Events.AsNoTracking().Include(e => e.Comments).ThenInclude(c => c.User).FirstOrDefaultAsync(e => e.Id == eventId);
         }
         public async Task<EventDTO?> Next()
         {

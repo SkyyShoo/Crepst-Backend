@@ -1,5 +1,6 @@
 ﻿using Backend.Data;
 using Backend.Models;
+using Backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -17,19 +18,19 @@ namespace Backend.Controllers
     [ApiController]
     public class ExtraitsController : ControllerBase
     {
-        private readonly BackendContext _context;
+        private readonly IEventService _eventService;
+        private readonly IExtraitService _extraitService;
         private readonly UserManager<User> _userManager;
-        private readonly IWebHostEnvironment _env;
         private readonly ILogger<ExtraitsController> _logger;
 
         private readonly string _pdfPath;
 
-        public ExtraitsController(BackendContext context, UserManager<User> userManager, IWebHostEnvironment env, ILogger<ExtraitsController> logger)
+        public ExtraitsController(BackendContext context, UserManager<User> userManager, IWebHostEnvironment env, ILogger<ExtraitsController> logger, IEventService eventService, IExtraitService extraitService)
         {
-            _context = context;
             _userManager = userManager;
-            _env = env;
             _logger = logger;
+            _eventService = eventService;
+            _extraitService = extraitService;
 
             bool isAzure = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_INSTANCE_ID"));
             if (isAzure)
@@ -47,7 +48,7 @@ namespace Backend.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Extrait>> GetExtrait(int id)
         {
-            var extrait = await _context.Extraits.FindAsync(id);
+            Extrait? extrait = await _extraitService.Get(id);
 
             if (extrait == null)
             {
@@ -61,34 +62,13 @@ namespace Backend.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<List<Extrait>>> GetExtraitsbyEvent(int id)
         {
-            var events = await _context.Events.FindAsync(id);
-
-            if (events == null)
-            {
-                return NotFound();
-            }
-            // A changer lorsque la création d'extrait et events sera complétement fonctionnel
-            if (events.ExtraitId != null)
-                foreach (int extraitId in events.ExtraitId)
-                {
-                    var extrait = await GetExtrait(extraitId);
-                    if (extrait.Value != null)
-                    {
-                        events.Extraits.Add(extrait.Value);
-                    }
-                }
-
-
-            return events.Extraits;
-
+            return await _extraitService.GetExtraitsByEvent(id);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetExtraitFile(int id)
         {
-            var extrait = await _context.Extraits
-                .AsNoTracking()
-                .FirstOrDefaultAsync(e => e.Id == id);
+            Extrait? extrait = await _extraitService.Get(id);
 
             if (extrait == null)
             {
@@ -151,7 +131,7 @@ namespace Backend.Controllers
                     return BadRequest(new { Message = "EventId invalide" });
                 }
 
-                Event? @event = await _context.Events.FindAsync(eventId);
+                Event? @event = await _eventService.Get(eventId);
                 if (@event != null && @event.DateFinExtrait < DateTime.UtcNow && !User.IsInRole(BackendContext.ADMIN_ROLE) && !User.IsInRole(BackendContext.MODERATOR_ROLE))
                 {
                     return BadRequest(new { Message = "Date limite dépasser" });
@@ -199,13 +179,9 @@ namespace Backend.Controllers
                     OwnerName = user.UserName
                 };
 
+                Extrait extraitAjoute = await _extraitService.Add(nouvelExtrait);
 
-
-
-                _context.Extraits.Add(nouvelExtrait);
-                await _context.SaveChangesAsync();
-
-                return Ok(nouvelExtrait);
+                return Ok(extraitAjoute);
             }
             catch (Exception ex)
             {
@@ -234,9 +210,7 @@ namespace Backend.Controllers
                 }
 
                 // Récupérer l'extrait en base de données
-                var extrait = await _context.Extraits
-                    .Include(e => e.User)
-                    .FirstOrDefaultAsync(e => e.Id == id);
+                Extrait? extrait = await _extraitService.GetWithUserAndEvent(id);
 
                 if (extrait == null)
                 {
@@ -273,8 +247,7 @@ namespace Backend.Controllers
                 }
 
                 // 5. Supprimer l'entrée en base de données
-                _context.Extraits.Remove(extrait);
-                await _context.SaveChangesAsync();
+                await _extraitService.Delete(extrait);
 
 
                 return Ok(new { Message = "Extrait supprimé avec succès" });
@@ -303,14 +276,14 @@ namespace Backend.Controllers
                 }
 
                 // Récupérer l'extrait existant
-                var extrait = await _context.Extraits.FindAsync(id);
+                Extrait? extrait = await _extraitService.GetWithUserAndEvent(id);
                 if (extrait == null)
                 {
                     return NotFound(new { Message = "Extrait introuvable" });
                 }
 
                 // Vérifier les permissions (propriétaire, admin ou modérateur)
-                bool isOwner = extrait.OwnerName == user.UserName;
+                bool isOwner = extrait.User == user;
                 bool isAdmin = User.IsInRole("admin");
                 bool isModerator = User.IsInRole("moderator");
 
@@ -398,8 +371,7 @@ namespace Backend.Controllers
                 }
 
                 // Sauvegarder les modifications
-                _context.Entry(extrait).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
+                await _extraitService.UpdateExtrait(extrait);
 
                 return Ok(extrait);
             }
@@ -420,7 +392,7 @@ namespace Backend.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult> DownloadPdf(int id)
         {
-            var extrait = await _context.Extraits.FindAsync(id);
+            Extrait? extrait = await _extraitService.Get(id);
             if (extrait == null)
             {
                 return NotFound(new { Message = "Extrait introuvable" });
@@ -431,7 +403,7 @@ namespace Backend.Controllers
             if (!System.IO.File.Exists(filePath))
                 return NotFound();
 
-            var fileBytes = System.IO.File.ReadAllBytes(filePath);
+            var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
             return File(fileBytes, "application/pdf", extrait.Titre);
         }
 

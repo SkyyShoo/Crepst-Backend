@@ -123,6 +123,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<Backend.Services.Interfaces.IEmailService, Backend.Services.EmailService>();
 builder.Services.AddScoped<Backend.Services.Interfaces.IEventService, Backend.Services.EventService>();
+builder.Services.AddScoped<Backend.Services.Interfaces.IExtraitService, Backend.Services.ExtraitService>();
 
 var app = builder.Build();
 
